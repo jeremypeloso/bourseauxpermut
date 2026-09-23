@@ -1,3 +1,8 @@
+#!/usr/bin/env bash
+# Hors Boîte — barre de menu
+set -e
+mkdir -p components
+cat > "components/Landing.tsx" << 'HB_EOF'
 'use client';
 import { useState } from 'react';
 import AuthModal from './AuthModal';
@@ -193,3 +198,5 @@ export default function Landing() {
     </div>
   );
 }
+HB_EOF
+echo "Menu mis à jour."

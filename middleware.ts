@@ -14,8 +14,10 @@ export async function middleware(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = req.nextUrl.pathname;
   if (!user && !PUBLIC.some(p => path === p || path.startsWith(p + '/'))) {
-    return NextResponse.redirect(new URL('/login', req.url));
+    return NextResponse.redirect(new URL('/', req.url));
   }
   return res;
 }
-export const config = { matcher: ['/((?!_next|favicon.ico|icon.png|logo.png|porte.png).*)'] };
+
+// Tout sauf les assets Next et les fichiers statiques (images, icônes, etc.)
+export const config = { matcher: ['/((?!_next/|.*\\.[a-zA-Z0-9]+$).*)'] };
