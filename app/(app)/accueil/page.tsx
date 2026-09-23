@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import CarteFrance from '@/components/CarteFrance';
+import CompteurLive from '@/components/CompteurLive';
 import { supabaseServer, currentUser } from '@/lib/supabase-server';
 
 export const dynamic = 'force-dynamic';
@@ -30,7 +31,7 @@ export default async function Accueil() {
         <div className="absolute left-3 top-3 bg-white/90 rounded-xl px-2.5 py-1.5 text-[10.5px] text-[#6F7789] leading-relaxed z-10">
           <i className="inline-block w-2 h-2 rounded-full bg-bleu mr-1.5 align-middle" />Vous<br /><i className="inline-block w-2 h-2 rounded-full bg-mint mr-1.5 align-middle" />Votre souhait
         </div>
-        <div className="absolute right-3 top-3 bg-navy text-white rounded-xl px-2.5 py-1.5 text-[10.5px] text-right leading-tight z-10"><b className="block text-[16px] text-[#8FF0C0]">{halos.reduce((s, h) => s + h.n, 0).toLocaleString('fr-FR')}</b>collègues en recherche<br />ce mois-ci</div>
+        <div className="absolute right-3 top-3 bg-navy text-white rounded-xl px-2.5 py-1.5 text-[10.5px] text-right leading-tight z-10"><b className="block text-[16px] text-[#8FF0C0]"><CompteurLive initial={halos.reduce((s, h) => s + h.n, 0)} /></b>collègues en recherche<br />en ce moment</div>
         <CarteFrance points={points} halos={halos} cycle={me && wish ? [[me.lng, me.lat], [wish.lng, wish.lat]] : undefined} />
       </Link>
 

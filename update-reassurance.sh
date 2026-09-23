@@ -1,10 +1,13 @@
+#!/usr/bin/env bash
+set -e
+mkdir -p components
+cat > "components/Landing.tsx" << 'HB_EOF'
 'use client';
 import { useState } from 'react';
 import AuthModal from './AuthModal';
 import CarteFrance from './CarteFrance';
-import CompteurLive from './CompteurLive';
 
-const HALOS = [{ lat: 48.86, lng: 2.35, n: 1240, nom: 'Paris' }, { lat: 45.76, lng: 4.83, n: 310, nom: 'Lyon' }, { lat: 43.30, lng: 5.37, n: 180, nom: 'Marseille' }, { lat: 50.63, lng: 3.06, n: 260, nom: 'Lille' }, { lat: 44.84, lng: -0.58, n: 95, nom: 'Bordeaux' }, { lat: 47.22, lng: -1.55, n: 120, nom: 'Nantes' }, { lat: 48.58, lng: 7.75, n: 140, nom: 'Strasbourg' }, { lat: 48.11, lng: -1.68, n: 60, nom: 'Rennes' }, { lat: 49.44, lng: 1.1, n: 70, nom: 'Rouen' }, { lat: 45.19, lng: 5.72, n: 60, nom: 'Grenoble' }];
+const HALOS = [{ lat: 48.86, lng: 2.35, n: 1240 }, { lat: 45.76, lng: 4.83, n: 310 }, { lat: 43.30, lng: 5.37, n: 180 }, { lat: 50.63, lng: 3.06, n: 260 }, { lat: 44.84, lng: -0.58, n: 95 }, { lat: 47.22, lng: -1.55, n: 120 }, { lat: 48.58, lng: 7.75, n: 140 }, { lat: 48.11, lng: -1.68, n: 60 }, { lat: 49.44, lng: 1.1, n: 70 }, { lat: 45.19, lng: 5.72, n: 60 }];
 
 const Ico = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>;
 const I = {
@@ -120,10 +123,10 @@ export default function Landing() {
             <Kicker t="Permutation" light /><H2 t="Vous n'êtes pas le seul à vouloir bouger." light />
             <p className="text-[17px] text-white/70 mt-5 leading-relaxed">Des milliers de collègues attendent une mutation qui ne vient pas. Beaucoup veulent exactement le poste qu&apos;un autre veut quitter. Ils ne le savent pas, et ne peuvent le dire à personne.</p>
             <p className="text-[17px] text-white/70 mt-3 leading-relaxed">Hors Boîte croise les souhaits en silence et ferme les cycles à 2, 3 ou 4 : vous allez à Nice, Nice va à Toulouse, Toulouse vient chez vous.</p>
-            <div className="grid grid-cols-3 gap-6 mt-10 pt-8 border-t border-white/10">{[['2 à 4', 'agents par cycle'], ['24 ×', 'par jour, les souhaits sont recroisés'], ['0', 'nom visible avant accord']].map(([b, s]) => <div key={s}><b className="block text-[32px] font-extrabold tracking-tight text-white">{b}</b><span className="text-[13px] text-white/55">{s}</span></div>)}</div>
+            <div className="grid grid-cols-3 gap-6 mt-10 pt-8 border-t border-white/10">{[['2 à 4', 'agents par cycle'], ['1 h', 'entre deux passages'], ['0', 'nom visible avant accord']].map(([b, s]) => <div key={s}><b className="block text-[32px] font-extrabold tracking-tight text-white">{b}</b><span className="text-[13px] text-white/55">{s}</span></div>)}</div>
           </div>
           <div className="relative rounded-[28px] bg-gradient-to-b from-[#DCE5F5] to-[#E9EEF7] p-6">
-            <div className="absolute right-5 top-5 bg-navy text-white rounded-2xl px-3.5 py-2.5 text-[11px] text-right leading-tight z-10"><b className="block text-[22px] text-[#8FF0C0]"><CompteurLive initial={2405} /></b>collègues en recherche<br />en ce moment</div>
+            <div className="absolute right-5 top-5 bg-navy text-white rounded-2xl px-3.5 py-2.5 text-[11px] text-right leading-tight z-10"><b className="block text-[22px] text-[#8FF0C0]">2 405</b>collègues en recherche<br />ce mois-ci</div>
             <CarteFrance halos={HALOS} points={[{ lat: 43.61, lng: 3.88, label: 'Montpellier', cls: 'me' }, { lat: 43.70, lng: 7.27, label: 'Nice', cls: 'wish' }, { lat: 43.60, lng: 1.44, label: 'Toulouse', cls: 'other' }]} cycle={[[3.88, 43.61], [7.27, 43.70], [1.44, 43.60]]} />
             <div className="absolute left-5 bottom-5 bg-white rounded-2xl px-3.5 py-2.5 text-[12.5px] text-navy shadow-lg max-w-[250px]"><b className="block">Un cycle à 3 s&apos;est fermé</b>Chacun obtient son souhait n°1.</div>
           </div>
@@ -206,3 +209,5 @@ export default function Landing() {
     </div>
   );
 }
+HB_EOF
+echo "Barre de réassurance mise à jour."

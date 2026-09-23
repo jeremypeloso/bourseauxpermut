@@ -1,3 +1,123 @@
+#!/usr/bin/env bash
+# Hors Boîte — carte animée + compteur temps réel
+set -e
+
+mkdir -p "components"
+cat > "components/CarteFrance.tsx" << 'HB_EOF'
+'use client';
+import { useState } from 'react';
+import { FRANCE_D, FRANCE_H, projeter } from '@/lib/france-path';
+
+type Pt = { lat: number; lng: number; label?: string; cls: 'me' | 'wish' | 'other' };
+type Halo = { lat: number; lng: number; n: number; nom?: string };
+
+/**
+ * Carte SVG inline, aucune dépendance.
+ * Halos = collègues en recherche par ville (jamais qui), animés en vagues décalées.
+ * Cycle = tracés qui se dessinent en boucle. Survol d'une ville = nombre de collègues.
+ */
+export default function CarteFrance({ points, halos, cycle, anime = true }: { points: Pt[]; halos: Halo[]; cycle?: [number, number][]; anime?: boolean }) {
+  const [hover, setHover] = useState<number | null>(null);
+  const col = { me: '#1E6BFF', wish: '#22B573', other: '#E8232B' };
+  const curve = (a: readonly [number, number], b: readonly [number, number], off: number) => {
+    const mx = (a[0] + b[0]) / 2, my = (a[1] + b[1]) / 2, dx = b[0] - a[0], dy = b[1] - a[1], L = Math.hypot(dx, dy) || 1;
+    return `M${a[0]} ${a[1]} Q${(mx - dy / L * off).toFixed(1)} ${(my + dx / L * off).toFixed(1)} ${b[0]} ${b[1]}`;
+  };
+  const cyc = (cycle ?? []).map(([lng, lat]) => projeter(lng, lat));
+  const h = hover !== null ? halos[hover] : null;
+  const hp = h ? projeter(h.lng, h.lat) : null;
+
+  return (
+    <svg viewBox={`0 0 340 ${FRANCE_H}`} className="w-full block select-none">
+      <defs>
+        <marker id="mk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1E6BFF" /></marker>
+        <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#0F1B33" floodOpacity=".18" /></filter>
+        <style>{`
+          @keyframes hb-wave { 0% { transform: scale(.6); opacity: .55 } 100% { transform: scale(2.1); opacity: 0 } }
+          @keyframes hb-draw { 0% { stroke-dashoffset: 400; opacity: 0 } 10% { opacity: 1 } 60% { stroke-dashoffset: 0; opacity: 1 } 85% { opacity: 1 } 100% { stroke-dashoffset: 0; opacity: 0 } }
+          @keyframes hb-dash { to { stroke-dashoffset: -26 } }
+          .hb-wave { transform-box: fill-box; transform-origin: center; animation: hb-wave 3.2s ease-out infinite }
+          .hb-draw { stroke-dasharray: 400; animation: hb-draw 6s ease-in-out infinite }
+          .hb-dash { stroke-dasharray: 5 6; animation: hb-dash 1.6s linear infinite }
+          @media (prefers-reduced-motion: reduce) { .hb-wave, .hb-draw, .hb-dash { animation: none } .hb-draw { stroke-dasharray: 5 6; opacity: 1 } }
+        `}</style>
+      </defs>
+      <path d={FRANCE_D} fill="#fff" stroke="#CBD3E3" strokeWidth="1.2" strokeLinejoin="round" filter="url(#sh)" />
+
+      {halos.map((hl, i) => {
+        const [x, y] = projeter(hl.lng, hl.lat); const r = 6 + Math.sqrt(hl.n) / 2.2;
+        return (
+          <g key={i} onMouseEnter={() => setHover(i)} onMouseLeave={() => setHover(null)} style={{ cursor: 'default' }}>
+            <circle cx={x} cy={y} r={r} fill="#1E6BFF" opacity=".10" />
+            {anime && <circle className="hb-wave" cx={x} cy={y} r={r * .7} fill="none" stroke="#1E6BFF" strokeWidth="1.2" style={{ animationDelay: `${(i * .55) % 3.2}s` }} />}
+            {anime && <circle className="hb-wave" cx={x} cy={y} r={r * .7} fill="none" stroke="#1E6BFF" strokeWidth="1.2" style={{ animationDelay: `${((i * .55) % 3.2) + 1.6}s` }} />}
+            <circle cx={x} cy={y} r={hover === i ? 3.2 : 2.2} fill="#1E6BFF" opacity=".8" />
+            <circle cx={x} cy={y} r={Math.max(r, 12)} fill="transparent" />
+          </g>
+        );
+      })}
+
+      {cyc.map((p, i) => cyc.length > 1 && (
+        <path key={i} className={anime ? 'hb-draw' : 'hb-dash'} style={{ animationDelay: `${i * .4}s` }} d={curve(p, cyc[(i + 1) % cyc.length], i % 2 ? 30 : -22)} fill="none" stroke="#1E6BFF" strokeWidth="2" markerEnd="url(#mk)" />
+      ))}
+
+      {points.map((p, i) => { const [x, y] = projeter(p.lng, p.lat); const c = col[p.cls]; return (
+        <g key={i}>
+          <circle cx={x} cy={y} r="11" fill={c} opacity=".18" />
+          {anime && <circle className="hb-wave" cx={x} cy={y} r="9" fill="none" stroke={c} strokeWidth="1.5" style={{ animationDelay: `${i * 1.1}s`, animationDuration: '2.6s' }} />}
+          <circle cx={x} cy={y} r="5" fill={c} stroke="#fff" strokeWidth="2.5" />
+          {p.label && <><rect x={x - 27} y={y + 8} width="54" height="14" rx="7" fill={c === '#1E6BFF' ? '#0F1B33' : c} /><text x={x} y={y + 18} textAnchor="middle" fontSize="9" fontWeight="700" fill="#fff" fontFamily="Helvetica,Arial">{p.label}</text></>}
+        </g>
+      ); })}
+
+      {h && hp && (
+        <g pointerEvents="none">
+          <rect x={hp[0] - 44} y={hp[1] - 36} width="88" height="24" rx="8" fill="#0F1B33" />
+          <text x={hp[0]} y={hp[1] - 26} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#fff" fontFamily="Helvetica,Arial">{h.nom ?? ''}</text>
+          <text x={hp[0]} y={hp[1] - 17} textAnchor="middle" fontSize="8" fill="#8FF0C0" fontFamily="Helvetica,Arial">{h.n} en recherche</text>
+        </g>
+      )}
+    </svg>
+  );
+}
+HB_EOF
+
+mkdir -p "components"
+cat > "components/CompteurLive.tsx" << 'HB_EOF'
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { supabaseBrowser } from '@/lib/supabase-browser';
+
+/**
+ * Compteur public en temps réel, lu dans stats_publiques (jamais dans profils).
+ * Animation du chiffre quand il change. Repli sur la valeur initiale si Realtime est indisponible.
+ */
+export default function CompteurLive({ cle = 'en_recherche', initial = 0, className = '' }: { cle?: string; initial?: number; className?: string }) {
+  const [val, setVal] = useState(initial);
+  const [affiche, setAffiche] = useState(initial);
+  const raf = useRef<number>();
+
+  useEffect(() => {
+    const sb = supabaseBrowser();
+    sb.from('stats_publiques').select('valeur').eq('cle', cle).single().then(({ data }) => { if (data) setVal(data.valeur); });
+    const ch = sb.channel('stats_publiques').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'stats_publiques', filter: `cle=eq.${cle}` }, (p: any) => setVal(p.new.valeur)).subscribe();
+    return () => { sb.removeChannel(ch); };
+  }, [cle]);
+
+  useEffect(() => {
+    const from = affiche, to = val, t0 = performance.now(), d = 900;
+    const step = (t: number) => { const k = Math.min(1, (t - t0) / d); setAffiche(Math.round(from + (to - from) * (1 - Math.pow(1 - k, 3)))); if (k < 1) raf.current = requestAnimationFrame(step); };
+    raf.current = requestAnimationFrame(step);
+    return () => { if (raf.current) cancelAnimationFrame(raf.current); };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [val]);
+
+  return <span className={className}>{affiche.toLocaleString('fr-FR')}</span>;
+}
+HB_EOF
+
+mkdir -p "components"
+cat > "components/Landing.tsx" << 'HB_EOF'
 'use client';
 import { useState } from 'react';
 import AuthModal from './AuthModal';
@@ -206,3 +326,115 @@ export default function Landing() {
     </div>
   );
 }
+HB_EOF
+
+mkdir -p "app/(app)/accueil"
+cat > "app/(app)/accueil/page.tsx" << 'HB_EOF'
+import Link from 'next/link';
+import Image from 'next/image';
+import CarteFrance from '@/components/CarteFrance';
+import CompteurLive from '@/components/CompteurLive';
+import { supabaseServer, currentUser } from '@/lib/supabase-server';
+
+export const dynamic = 'force-dynamic';
+
+export default async function Accueil() {
+  const sb = supabaseServer();
+  const user = (await currentUser())!;
+  const { data: profil } = await sb.from('profils').select('institution, premium_jusqua, services(ville, lat, lng), souhaits(rang, services(ville, lat, lng))').eq('id', user.id).single();
+  const premium = !!profil?.premium_jusqua && new Date(profil.premium_jusqua) > new Date();
+  const { data: corrs } = await sb.from('v_mes_correspondances').select('id, type, score, created_at, est_moi, ville_actuelle, ville_cible').order('score', { ascending: false });
+  const dernier = corrs?.find(c => c.est_moi);
+  const nb = new Set((corrs ?? []).map(c => c.id)).size;
+  const { data: cal } = await sb.from('calendriers').select('libelle, cloture').eq('institution', profil?.institution).order('cloture').limit(2);
+  const { data: refs } = await sb.from('referents').select('id').eq('disponible', true);
+  // Halos : comptage par ville des profils vérifiés (vue agrégée à ajouter en v1.1 ; ici les souhaits de démo)
+  const me: any = (profil as any)?.services; const wish: any = (profil as any)?.souhaits?.find((s: any) => s.rang === 1)?.services;
+  const points = [me && { lat: me.lat, lng: me.lng, label: me.ville, cls: 'me' as const }, wish && { lat: wish.lat, lng: wish.lng, label: wish.ville, cls: 'wish' as const }].filter(Boolean) as any[];
+  const halos = [{ lat: 48.86, lng: 2.35, n: 1240 }, { lat: 45.76, lng: 4.83, n: 310 }, { lat: 43.30, lng: 5.37, n: 180 }, { lat: 50.63, lng: 3.06, n: 260 }, { lat: 44.84, lng: -0.58, n: 95 }, { lat: 47.22, lng: -1.55, n: 120 }, { lat: 48.58, lng: 7.75, n: 140 }];
+
+  return (
+    <>
+      <div className="flex items-center justify-between mb-3">
+        <Image src="/logo.png" alt="Hors Boîte" width={150} height={40} priority />
+        <span className={premium ? 'pill-mint' : 'pill-bleu'}>{premium ? 'Premium' : 'Gratuit'}</span>
+      </div>
+      <Link href="/permut" className="block relative rounded-xl3 overflow-hidden bg-gradient-to-b from-[#DCE5F5] to-[#E9EEF7] p-3 pb-2 shadow-[0_14px_34px_-16px_rgba(15,27,51,.22)]">
+        <div className="absolute left-3 top-3 bg-white/90 rounded-xl px-2.5 py-1.5 text-[10.5px] text-[#6F7789] leading-relaxed z-10">
+          <i className="inline-block w-2 h-2 rounded-full bg-bleu mr-1.5 align-middle" />Vous<br /><i className="inline-block w-2 h-2 rounded-full bg-mint mr-1.5 align-middle" />Votre souhait
+        </div>
+        <div className="absolute right-3 top-3 bg-navy text-white rounded-xl px-2.5 py-1.5 text-[10.5px] text-right leading-tight z-10"><b className="block text-[16px] text-[#8FF0C0]"><CompteurLive initial={halos.reduce((s, h) => s + h.n, 0)} /></b>collègues en recherche<br />en ce moment</div>
+        <CarteFrance points={points} halos={halos} cycle={me && wish ? [[me.lng, me.lat], [wish.lng, wish.lat]] : undefined} />
+      </Link>
+
+      {dernier ? (
+        <Link href={`/permut/${dernier.id}`} className="card block mt-3">
+          <div className="flex justify-between items-center"><b className="text-[15px] text-navy">{dernier.type === 'directe' ? 'Une permutation directe est possible' : `Un cycle à ${dernier.type === 'cycle3' ? 3 : 4} s'est fermé pour vous`}</b><span className="pill-mint">{dernier.score} %</span></div>
+          <div className="sub mt-1">{dernier.ville_actuelle} → {dernier.ville_cible} · {nb} correspondance{nb > 1 ? 's' : ''} au total</div>
+          {!premium && <span className="pill-amber mt-2">Reçu avec 48 h de retard · les Premium sont prévenus en premier</span>}
+        </Link>
+      ) : (
+        <div className="card mt-3"><b className="text-[15px] text-navy">Rien de neuf</b><div className="sub mt-1">Vos souhaits sont actifs. Le matching tourne toutes les heures.</div></div>
+      )}
+
+      <div className="flex gap-2.5 mt-3">
+        <Link href="/ecoute" className="flex-1 rounded-2xl px-3 py-3.5 text-white font-bold bg-gradient-to-br from-[#3ED18B] to-[#149A5E] shadow-lg leading-tight">Parler<small className="block text-[10.5px] font-semibold opacity-85">{refs?.length ?? 0} collègue{(refs?.length ?? 0) > 1 ? 's' : ''} dispo</small></Link>
+        <Link href="/apres" className="flex-1 rounded-2xl px-3 py-3.5 text-white font-bold bg-gradient-to-br from-[#A66BFF] to-[#6C3BC9] shadow-lg leading-tight">L&apos;après<small className="block text-[10.5px] font-semibold opacity-85">Préparer sans le dire</small></Link>
+      </div>
+      <Link href="/points" className="flex justify-between items-center mt-3 bg-white rounded-2xl px-3.5 py-3 text-[12.5px] text-[#6F7789]"><span>Mes points de mutation</span><b className="text-navy">Simuler ›</b></Link>
+      {(cal ?? []).map(c => <div key={c.libelle} className="flex justify-between items-center mt-2 bg-white rounded-2xl px-3.5 py-3 text-[12.5px] text-[#6F7789]"><span>{c.libelle}</span><b className="text-navy">Clôture le {new Date(c.cloture).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</b></div>)}
+    </>
+  );
+}
+HB_EOF
+
+mkdir -p "supabase/migrations"
+cat > "supabase/migrations/0003_stats_publiques.sql" << 'HB_EOF'
+-- Statistiques publiques agrégées, alimentées par trigger, lisibles par tous (anon compris).
+-- Jamais de lien avec un profil : uniquement des compteurs.
+create table if not exists stats_publiques (
+  cle text primary key,
+  valeur int not null default 0,
+  maj timestamptz not null default now()
+);
+insert into stats_publiques (cle, valeur) values ('en_recherche', 0), ('cycles_fermes', 0) on conflict do nothing;
+
+alter table stats_publiques enable row level security;
+create policy stats_lecture on stats_publiques for select to anon, authenticated using (true);
+
+-- Recalcule le nombre de profils vérifiés ayant au moins un souhait
+create or replace function maj_stat_en_recherche() returns trigger language plpgsql security definer as $$
+begin
+  update stats_publiques set valeur = (
+    select count(*) from profils p
+    where (p.verifie_carte or p.verifie_mail_pro) and exists (select 1 from souhaits s where s.profil_id = p.id)
+  ), maj = now() where cle = 'en_recherche';
+  return null;
+end $$;
+drop trigger if exists trg_stat_profils on profils;
+create trigger trg_stat_profils after insert or update or delete on profils for each statement execute function maj_stat_en_recherche();
+drop trigger if exists trg_stat_souhaits on souhaits;
+create trigger trg_stat_souhaits after insert or update or delete on souhaits for each statement execute function maj_stat_en_recherche();
+
+create or replace function maj_stat_cycles() returns trigger language plpgsql security definer as $$
+begin
+  update stats_publiques set valeur = (select count(*) from correspondances where statut = 'confirmee'), maj = now() where cle = 'cycles_fermes';
+  return null;
+end $$;
+drop trigger if exists trg_stat_corr on correspondances;
+create trigger trg_stat_corr after insert or update on correspondances for each statement execute function maj_stat_cycles();
+
+-- Realtime sur cette table uniquement
+alter publication supabase_realtime add table stats_publiques;
+
+-- Halos par département : uniquement au-dessus d'un plancher, pour ne jamais identifier quelqu'un
+create or replace view v_halos_departements with (security_invoker = false) as
+select s.departement, count(*)::int as n, avg(s.lat)::numeric as lat, avg(s.lng)::numeric as lng
+from profils p join services s on s.id = p.service_id
+where (p.verifie_carte or p.verifie_mail_pro)
+group by s.departement having count(*) >= 10;
+grant select on v_halos_departements to anon, authenticated;
+HB_EOF
+
+echo "Carte et compteur mis à jour."
+echo "Supabase > SQL Editor : exécuter supabase/migrations/0003_stats_publiques.sql"
