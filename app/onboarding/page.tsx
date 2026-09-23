@@ -1,6 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 import Image from 'next/image';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 
@@ -18,12 +19,14 @@ const PROMESSES = [
   ['Suppression totale en un geste', 'Compte, souhaits, historique de matching : tout disparaît immédiatement.'],
 ];
 
-export default function Onboarding() {
+function OnboardingInner() {
   const r = useRouter();
+  const sp = useSearchParams();
+  const voie = sp.get('voie') === '2' ? 2 : 1;
   const [etape, setEtape] = useState<Etape>(0);
   const [inst, setInst] = useState('PN');
   const [lecture, setLecture] = useState<any>(null);
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState(sp.get('pro') ?? '');
   const [code, setCode] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -36,7 +39,7 @@ export default function Onboarding() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return r.replace('/login');
       const { data } = await sb.from('profils').select('institution, verifie_carte, verifie_mail_pro').eq('id', user.id).maybeSingle();
-      if (data) { setInst(data.institution); if (data.verifie_carte && data.verifie_mail_pro) r.replace('/accueil'); else if (data.verifie_carte) setEtape(3); }
+      if (data) { setInst(data.institution); if (data.verifie_carte || data.verifie_mail_pro) r.replace('/accueil'); }
     })();
   }, [r]);
 
@@ -100,17 +103,18 @@ export default function Onboarding() {
           ))}
         </div>
         <div className="flex-1" />
-        <button className="btn-dark mt-4" onClick={() => setEtape(2)}>Je comprends, continuer</button>
+        <button className="btn-dark mt-4" onClick={() => setEtape(voie === 2 ? 3 : 2)}>Je comprends, continuer</button>
       </>)}
 
       {etape === 2 && (<>
-        <h1 className="h1">Vérification 1 sur 2<br /><span className="text-bleu">Votre carte pro</span></h1>
+        <h1 className="h1">Vérification<br /><span className="text-bleu">Votre carte pro</span></h1>
         <p className="sub mt-2">Carte de police, carte militaire gendarmerie ou carte pénitentiaire. La photo est analysée puis détruite dans la seconde, elle n&apos;est jamais enregistrée.</p>
         <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => e.target.files?.[0] && envoyerCarte(e.target.files[0])} />
         {!lecture ? (
           <>
             <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours…' : 'Prendre la carte en photo'}</button>
             {msg && <p className="text-[12.5px] text-[#C8323B] mt-3">{msg}</p>}
+            <button className="btn-ghost mt-2" onClick={() => setEtape(3)}>Je préfère vérifier par mon adresse pro</button>
           </>
         ) : (
           <div className="card mt-5">
@@ -121,20 +125,21 @@ export default function Onboarding() {
               <span className="bg-[#F5F7FB] rounded-lg px-2.5 py-1.5"><b className="text-[#6F7789] font-semibold mr-1">Matricule</b>{lecture.matricule_masque}</span>
             </div>
             <p className="sub mt-3">Le matricule est transformé en empreinte irréversible. La photo a été détruite.</p>
-            <button className="btn mt-3" onClick={() => setEtape(3)}>Continuer</button>
-            <button className="btn-ghost mt-2" onClick={() => { setLecture(null); file.current?.click(); }}>Reprendre la photo</button>
+            <button className="btn mt-3" onClick={() => setEtape(4)}>C'est vérifié, continuer</button>
+            <button className="btn-ghost mt-2" onClick={() => setEtape(3)}>Ajouter aussi mon adresse pro (badge « Vérifié deux fois »)</button>
           </div>
         )}
       </>)}
 
       {etape === 3 && (<>
-        <h1 className="h1">Vérification 2 sur 2<br /><span className="text-bleu">Votre adresse pro</span></h1>
+        <h1 className="h1">{voie === 2 ? 'Vérification' : 'Vérification 2 sur 2'}<br /><span className="text-bleu">Votre adresse pro</span></h1>
         <p className="sub mt-2">Votre boîte nominative, pas celle de l&apos;unité. Police : @interieur.gouv.fr. Gendarmerie : @gendarmerie.interieur.gouv.fr. Pénitentiaire : @justice.fr. Le code est à lire au service, valable 7 jours.</p>
         <input className="field mt-5" type="email" placeholder="prenom.nom@interieur.gouv.fr" value={email} onChange={e => setEmail(e.target.value)} />
         <button className="btn-ghost mt-2" onClick={envoyerMail} disabled={busy || !email.includes('@')}>Envoyer le code</button>
         <input className="field mt-4 text-center text-[22px] tracking-[6px] font-extrabold" inputMode="numeric" placeholder="000000" value={code} onChange={e => setCode(e.target.value)} />
         {msg && <p className="text-[12.5px] text-navy mt-3">{msg}</p>}
         <button className="btn mt-3" onClick={confirmer} disabled={busy || code.replace(/\s/g, '').length !== 6}>Confirmer le code</button>
+        <button className="btn-ghost mt-2" onClick={() => setEtape(2)}>Je préfère photographier ma carte pro</button>
         <button className="btn-ghost mt-2" onClick={() => r.push('/profil')}>Plus tard, je remplis mes souhaits</button>
       </>)}
 
@@ -145,7 +150,7 @@ export default function Onboarding() {
         <div className="card mt-4">
           <div className="kv"><span>Nom et prénom</span><b>Chiffrés, table séparée</b></div>
           <div className="kv"><span>Matricule</span><b>Empreinte uniquement</b></div>
-          <div className="kv"><span>Photo de la carte</span><b className="text-[#16804F]">Détruite</b></div>
+          <div className="kv"><span>Photo de la carte</span><b className="text-[#16804F]">{lecture ? 'Détruite' : 'Jamais demandée'}</b></div>
           <div className="kv"><span>Adresse pro</span><b>Chiffrée</b></div>
           <div className="kv"><span>Corps, grade, affectation</span><b>Pour le matching</b></div>
         </div>
@@ -154,4 +159,8 @@ export default function Onboarding() {
       </>)}
     </main>
   );
+}
+
+export default function Onboarding() {
+  return <Suspense><OnboardingInner /></Suspense>;
 }

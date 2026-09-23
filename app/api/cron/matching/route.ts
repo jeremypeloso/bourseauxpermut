@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
   const { data: profils } = await admin
     .from('profils')
     .select('id, institution, corps, grade, service_id, type_service, anciennete_poste_mois, depart_des, accepte_cycles, accepte_souhait_2_3, accepte_changer_service, premium_jusqua, services(departement), souhaits(rang, service_id, departement, contrainte_type_service)')
-    .eq('verifie_carte', true).eq('verifie_mail_pro', true);
+    .or('verifie_carte.eq.true,verifie_mail_pro.eq.true');
 
   const agents: Agent[] = (profils ?? []).map((p: any) => ({
     id: p.id, institution: p.institution, corps: p.corps, grade: p.grade, service_id: p.service_id,

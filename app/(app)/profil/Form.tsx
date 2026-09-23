@@ -9,7 +9,8 @@ export default function FormProfil({ profil, souhaits, services, corps, grades }
   const [p, setP] = useState({ corps: profil?.corps ?? '', grade: profil?.grade ?? '', service_id: profil?.service_id ?? '', type_service: profil?.type_service ?? '', anciennete_poste_mois: profil?.anciennete_poste_mois ?? 0, depart_des: profil?.depart_des ?? '', cimm_departement: profil?.cimm_departement ?? '', accepte_cycles: profil?.accepte_cycles ?? true, accepte_souhait_2_3: profil?.accepte_souhait_2_3 ?? true, accepte_changer_service: profil?.accepte_changer_service ?? false });
   const [s, setS] = useState<any[]>(souhaits.length ? souhaits : [{ rang: 1, service_id: '' }]);
   const [msg, setMsg] = useState<string | null>(null);
-  const verifie = profil?.verifie_carte && profil?.verifie_mail_pro;
+  const verifie = profil?.verifie_carte || profil?.verifie_mail_pro;
+  const deuxFois = profil?.verifie_carte && profil?.verifie_mail_pro;
 
   const save = async () => {
     setMsg(null);
@@ -30,7 +31,7 @@ export default function FormProfil({ profil, souhaits, services, corps, grades }
 
   return (
     <>
-      <div className="flex justify-between items-center mb-3"><h1 className="h1">Mon profil</h1><span className={verifie ? 'pill-mint' : 'pill-amber'}>{verifie ? 'Vérifié' : 'À vérifier'}</span></div>
+      <div className="flex justify-between items-center mb-3"><h1 className="h1">Mon profil</h1><span className={verifie ? 'pill-mint' : 'pill-amber'}>{deuxFois ? 'Vérifié deux fois' : verifie ? 'Vérifié' : 'À vérifier'}</span></div>
       {!verifie && <a href="/onboarding" className="btn mb-3">Terminer la vérification</a>}
       <div className="card">
         <div className="kv"><span>Institution</span><b>{profil?.institution}</b></div>

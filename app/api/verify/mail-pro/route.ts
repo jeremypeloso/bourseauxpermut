@@ -27,12 +27,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, message: 'Le domaine ne correspond pas à votre institution. Utilisez votre adresse nominative, pas celle de l\'unité.' });
     }
     // Cohérence avec le nom lu sur la carte
-    const { data: ident } = await admin.from('identites').select('nom_enc, prenom_enc').eq('profil_id', user.id).single();
-    if (!ident) return NextResponse.json({ ok: false, message: 'Vérifiez d\'abord votre carte professionnelle.' });
-    const nom = normalise(decrypt(ident.nom_enc)), prenom = normalise(decrypt(ident.prenom_enc));
-    const l = normalise(local);
-    if (!(l.includes(nom) && l.includes(prenom.slice(0, 3)))) {
-      return NextResponse.json({ ok: false, message: 'L\'adresse ne semble pas être la vôtre (prénom.nom attendu).' });
+    const { data: ident } = await admin.from('identites').select('nom_enc, prenom_enc').eq('profil_id', user.id).maybeSingle();
+    if (ident && decrypt(ident.nom_enc)) {
+      // Voie 1 + 2 : l'adresse doit correspondre au nom lu sur la carte
+      const nom = normalise(decrypt(ident.nom_enc)), prenom = normalise(decrypt(ident.prenom_enc));
+      const l = normalise(local);
+      if (!(l.includes(nom) && l.includes(prenom.slice(0, 3)))) {
+        return NextResponse.json({ ok: false, message: 'L\'adresse ne semble pas être la vôtre (prénom.nom attendu).' });
+      }
+    } else if (!/^[a-z]+[.\-][a-z\-]+\d*$/.test(normalise(local).length ? local : '')) {
+      // Voie 2 seule : on exige au moins la forme prenom.nom (pas une boîte fonctionnelle)
+      return NextResponse.json({ ok: false, message: 'Utilisez votre adresse nominative (prenom.nom@…), pas une boîte de service.' });
+    }
+    if (!ident) {
+      // Voie 2 seule : prénom.nom déduits de l'adresse pour la révélation ultérieure
+      const [pre, nomAdr] = local.split(/[.\-]/);
+      await admin.from('identites').insert({ profil_id: user.id, nom_enc: encrypt((nomAdr ?? '').toUpperCase()), prenom_enc: encrypt(pre ?? ''), mail_pro_enc: encrypt(email) });
     }
 
     const code = String(Math.floor(100000 + Math.random() * 900000));
