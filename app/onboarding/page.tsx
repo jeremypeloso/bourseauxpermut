@@ -1,0 +1,157 @@
+'use client';
+import { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import Image from 'next/image';
+import { supabaseBrowser } from '@/lib/supabase-browser';
+
+type Etape = 0 | 1 | 2 | 3 | 4;
+const INSTITUTIONS = [
+  { code: 'PN', t: 'Police nationale', s: 'CEA, CC, CCD · mouvements généraux et profilés · barème à points', c: 'from-[#4C86FF] to-[#1B4FD6]' },
+  { code: 'GN', t: 'Gendarmerie nationale', s: 'Sous-officiers, GAV, officiers · plan annuel de mutation · logement en caserne', c: 'from-[#2F4A8A] to-[#0F1B33]' },
+  { code: 'AP', t: 'Administration pénitentiaire', s: 'Surveillants, gradés, officiers, CPIP · campagnes de mobilité Justice', c: 'from-[#7A3E9D] to-[#4B1F6B]' },
+];
+const PROMESSES = [
+  ['Identité masquée', 'Vos nom, matricule et service ne sont jamais affichés avant une acceptation mutuelle.'],
+  ['Aucun annuaire, aucune recherche par nom', 'Vous ne voyez que vos propres correspondances. Vos collègues ne peuvent pas vous trouver.'],
+  ['Matricule haché, carte pro jamais stockée', 'La photo sert à vérifier, puis elle est détruite. Il ne reste qu\'une empreinte non réversible.'],
+  ['Aucun accès pour l\'administration, la hiérarchie ou les syndicats', 'Données hébergées en Europe, chiffrées, jamais vendues, sans publicité.'],
+  ['Suppression totale en un geste', 'Compte, souhaits, historique de matching : tout disparaît immédiatement.'],
+];
+
+export default function Onboarding() {
+  const r = useRouter();
+  const [etape, setEtape] = useState<Etape>(0);
+  const [inst, setInst] = useState('PN');
+  const [lecture, setLecture] = useState<any>(null);
+  const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
+  const [msg, setMsg] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const file = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    // Crée le profil minimal s'il n'existe pas
+    (async () => {
+      const sb = supabaseBrowser();
+      const { data: { user } } = await sb.auth.getUser();
+      if (!user) return r.replace('/login');
+      const { data } = await sb.from('profils').select('institution, verifie_carte, verifie_mail_pro').eq('id', user.id).maybeSingle();
+      if (data) { setInst(data.institution); if (data.verifie_carte && data.verifie_mail_pro) r.replace('/accueil'); else if (data.verifie_carte) setEtape(3); }
+    })();
+  }, [r]);
+
+  const choisirInstitution = async () => {
+    const sb = supabaseBrowser();
+    const { data: { user } } = await sb.auth.getUser();
+    await sb.from('profils').upsert({ id: user!.id, institution: inst }, { onConflict: 'id', ignoreDuplicates: true });
+    setEtape(1);
+  };
+
+  const envoyerCarte = async (f: File) => {
+    setBusy(true); setMsg(null);
+    const fd = new FormData(); fd.append('image', f);
+    const res = await fetch('/api/verify/card', { method: 'POST', body: fd }).then(x => x.json());
+    setBusy(false);
+    if (res.ok) setLecture(res); else setMsg(res.message ?? 'Lecture impossible');
+  };
+
+  const envoyerMail = async () => {
+    setBusy(true); setMsg(null);
+    const res = await fetch('/api/verify/mail-pro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'send', email }) }).then(x => x.json());
+    setBusy(false); setMsg(res.ok ? 'Code envoyé sur votre boîte pro. Il reste valable 7 jours.' : res.message);
+  };
+  const confirmer = async () => {
+    setBusy(true); setMsg(null);
+    const res = await fetch('/api/verify/mail-pro', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ action: 'confirm', code }) }).then(x => x.json());
+    setBusy(false); if (res.ok) setEtape(4); else setMsg(res.message);
+  };
+
+  const Dots = () => <div className="flex justify-center gap-1.5 my-3">{[0,1,2,3,4].map(i => <i key={i} className={`h-2 rounded-full ${i === etape ? 'w-5 bg-bleu' : 'w-2 bg-[#D5D9E2]'}`} />)}</div>;
+
+  return (
+    <main className="flex-1 flex flex-col px-5 pt-[max(12px,env(safe-area-inset-top))] pb-6">
+      <Dots />
+      {etape === 0 && (<>
+        <Image src="/porte.png" alt="" width={90} height={110} className="mx-auto drop-shadow-xl" />
+        <h1 className="h1 text-center mt-3">Vous êtes…</h1>
+        <p className="sub text-center mt-2">Chaque institution est un couloir séparé : on ne permute qu&apos;avec ses collègues. Ce choix ne pourra pas être modifié après vérification.</p>
+        <div className="flex flex-col gap-3 mt-5">
+          {INSTITUTIONS.map(i => (
+            <button key={i.code} onClick={() => setInst(i.code)} className={`flex items-center gap-3 text-left bg-white rounded-xl2 p-4 border-2 ${inst === i.code ? 'border-bleu bg-[#E6EEFF]' : 'border-[#E6E9F0]'}`}>
+              <span className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${i.c} text-white font-extrabold flex items-center justify-center`}>{i.code}</span>
+              <span><b className="block text-navy">{i.t}</b><small className="sub">{i.s}</small></span>
+            </button>
+          ))}
+        </div>
+        <div className="flex-1" />
+        <button className="btn-dark mt-4" onClick={choisirInstitution}>Continuer</button>
+      </>)}
+
+      {etape === 1 && (<>
+        <Image src="/porte.png" alt="" width={90} height={110} className="mx-auto drop-shadow-xl" />
+        <h1 className="h1 text-center mt-3">Personne ne saura<br />que vous cherchez</h1>
+        <p className="sub text-center mt-2">Hors Boîte a été conçue par un ancien fonctionnaire de police, pour les policiers, les gendarmes et les personnels pénitentiaires. La discrétion administrative n&apos;est pas une option, c&apos;est la base.</p>
+        <div className="card mt-4">
+          {PROMESSES.map(([t, s]) => (
+            <div key={t} className="flex gap-3 py-2.5 border-t border-[#E6E9F0] first:border-t-0">
+              <span className="w-6 h-6 rounded-full bg-[#DFF7EB] text-[#16804F] text-[12px] font-extrabold flex items-center justify-center shrink-0">✓</span>
+              <span><b className="block text-navy text-[13.5px]">{t}</b><span className="sub">{s}</span></span>
+            </div>
+          ))}
+        </div>
+        <div className="flex-1" />
+        <button className="btn-dark mt-4" onClick={() => setEtape(2)}>Je comprends, continuer</button>
+      </>)}
+
+      {etape === 2 && (<>
+        <h1 className="h1">Vérification 1 sur 2<br /><span className="text-bleu">Votre carte pro</span></h1>
+        <p className="sub mt-2">Carte de police, carte militaire gendarmerie ou carte pénitentiaire. La photo est analysée puis détruite dans la seconde, elle n&apos;est jamais enregistrée.</p>
+        <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => e.target.files?.[0] && envoyerCarte(e.target.files[0])} />
+        {!lecture ? (
+          <>
+            <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours…' : 'Prendre la carte en photo'}</button>
+            {msg && <p className="text-[12.5px] text-[#C8323B] mt-3">{msg}</p>}
+          </>
+        ) : (
+          <div className="card mt-5">
+            <div className="flex justify-between items-center"><b className="text-[14px]">Lecture automatique</b><span className="pill-mint">Réussie</span></div>
+            <div className="flex flex-wrap gap-1.5 mt-3 text-[12.5px]">
+              <span className="bg-[#F5F7FB] rounded-lg px-2.5 py-1.5"><b className="text-[#6F7789] font-semibold mr-1">Nom</b>{lecture.nom}</span>
+              <span className="bg-[#F5F7FB] rounded-lg px-2.5 py-1.5"><b className="text-[#6F7789] font-semibold mr-1">Prénom</b>{lecture.prenom}</span>
+              <span className="bg-[#F5F7FB] rounded-lg px-2.5 py-1.5"><b className="text-[#6F7789] font-semibold mr-1">Matricule</b>{lecture.matricule_masque}</span>
+            </div>
+            <p className="sub mt-3">Le matricule est transformé en empreinte irréversible. La photo a été détruite.</p>
+            <button className="btn mt-3" onClick={() => setEtape(3)}>Continuer</button>
+            <button className="btn-ghost mt-2" onClick={() => { setLecture(null); file.current?.click(); }}>Reprendre la photo</button>
+          </div>
+        )}
+      </>)}
+
+      {etape === 3 && (<>
+        <h1 className="h1">Vérification 2 sur 2<br /><span className="text-bleu">Votre adresse pro</span></h1>
+        <p className="sub mt-2">Votre boîte nominative, pas celle de l&apos;unité. Police : @interieur.gouv.fr. Gendarmerie : @gendarmerie.interieur.gouv.fr. Pénitentiaire : @justice.fr. Le code est à lire au service, valable 7 jours.</p>
+        <input className="field mt-5" type="email" placeholder="prenom.nom@interieur.gouv.fr" value={email} onChange={e => setEmail(e.target.value)} />
+        <button className="btn-ghost mt-2" onClick={envoyerMail} disabled={busy || !email.includes('@')}>Envoyer le code</button>
+        <input className="field mt-4 text-center text-[22px] tracking-[6px] font-extrabold" inputMode="numeric" placeholder="000000" value={code} onChange={e => setCode(e.target.value)} />
+        {msg && <p className="text-[12.5px] text-navy mt-3">{msg}</p>}
+        <button className="btn mt-3" onClick={confirmer} disabled={busy || code.replace(/\s/g, '').length !== 6}>Confirmer le code</button>
+        <button className="btn-ghost mt-2" onClick={() => r.push('/profil')}>Plus tard, je remplis mes souhaits</button>
+      </>)}
+
+      {etape === 4 && (<>
+        <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#3ED18B] to-[#149A5E] mx-auto flex items-center justify-center text-white text-3xl font-extrabold mt-2">✓</div>
+        <h1 className="h1 text-center mt-4">Compte vérifié</h1>
+        <p className="sub text-center mt-2">Ce que Hors Boîte conserve de vous, et rien d&apos;autre.</p>
+        <div className="card mt-4">
+          <div className="kv"><span>Nom et prénom</span><b>Chiffrés, table séparée</b></div>
+          <div className="kv"><span>Matricule</span><b>Empreinte uniquement</b></div>
+          <div className="kv"><span>Photo de la carte</span><b className="text-[#16804F]">Détruite</b></div>
+          <div className="kv"><span>Adresse pro</span><b>Chiffrée</b></div>
+          <div className="kv"><span>Corps, grade, affectation</span><b>Pour le matching</b></div>
+        </div>
+        <div className="flex-1" />
+        <button className="btn-dark mt-4" onClick={() => r.push('/profil')}>Renseigner mes souhaits</button>
+      </>)}
+    </main>
+  );
+}

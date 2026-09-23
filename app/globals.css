@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root { color-scheme: light; }
+html, body { height: 100%; background: #EEF2F8; color: #141A26; -webkit-font-smoothing: antialiased; }
+body { font-family: -apple-system, "SF Pro Text", "Segoe UI", Helvetica, Arial, sans-serif; }
+
+.card { @apply bg-white rounded-xl2 p-4 shadow-[0_1px_2px_rgba(15,27,51,.04),0_8px_24px_-12px_rgba(15,27,51,.12)]; }
+.btn { @apply w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-4 font-bold text-[15px] text-white bg-bleu shadow-[0_10px_24px_-10px_rgba(45,107,255,.7)] active:scale-[.985] transition disabled:opacity-40; }
+.btn-ghost { @apply w-full flex items-center justify-center gap-2 rounded-2xl px-4 py-4 font-bold text-[15px] text-navy bg-white border border-[#E6E9F0]; }
+.btn-dark { @apply btn bg-navy shadow-[0_10px_24px_-10px_rgba(15,27,51,.7)]; }
+.pill { @apply inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-[11px] font-bold; }
+.pill-bleu { @apply pill bg-[#E6EEFF] text-bleud; }
+.pill-mint { @apply pill bg-[#DFF7EB] text-[#16804F]; }
+.pill-amber { @apply pill bg-[#FFF3D6] text-[#9A6A00]; }
+.pill-coral { @apply pill bg-[#FFE6E8] text-[#C8323B]; }
+.h1 { @apply text-[26px] font-extrabold tracking-[-.8px] text-navy leading-tight; }
+.sub { @apply text-[13px] text-[#6F7789] leading-snug; }
+.kv { @apply flex items-center justify-between py-2.5 border-t border-[#E6E9F0] first:border-t-0 text-[13.5px]; }
+.field { @apply w-full bg-white border border-[#E6E9F0] rounded-2xl px-4 py-3 text-[14px] text-navy outline-none focus:border-bleu; }
+.urg { @apply flex items-center gap-3 bg-white border border-[#FFD3D6] rounded-2xl px-3 py-3 mb-3; }

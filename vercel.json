@@ -1,0 +1,4 @@
+{
+  "crons": [{ "path": "/api/cron/matching", "schedule": "0 * * * *" }],
+  "functions": { "app/api/verify/card/route.ts": { "maxDuration": 60 } }
+}
