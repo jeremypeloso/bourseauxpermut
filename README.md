@@ -74,7 +74,7 @@ Permut' uniquement : annonces anonymes (style petites annonces) + matching intel
 Boost à l'unité : 4,99 € / 7 jours, sans abonnement.
 
 ## Prélancement (pré-inscription)
-`NEXT_PUBLIC_PRELAUNCH=1` dans `.env.local` et sur Vercel : la page d'accueil remplace les boutons de compte par un formulaire « Être prévenu à l'ouverture » (email perso, institution, département), compteur temps réel `preinscrits`, mail de confirmation neutre via Resend. Migration `0007_preinscriptions.sql`. L'app reste accessible aux comptes déjà existants (toi, les comptes de test). Jour J : passer la variable à `0`, redéployer, puis `node scripts/inviter.mjs` (par lots de 50, `--dry` pour simuler). Lien d'acquisition traçable : `labourseauxpermut.fr/?via=peps`.
+`NEXT_PUBLIC_PRELAUNCH=1` dans `.env.local` et sur Vercel : la page d'accueil remplace les boutons de compte par un formulaire « Être prévenu à l'ouverture » (email perso, institution, département), compteur temps réel `preinscrits`, mail de confirmation neutre via Resend. Migration `0007_preinscriptions.sql`. L'app reste accessible aux comptes déjà existants (toi, les comptes de test). Jour J : passer la variable à `0`, redéployer, puis `node scripts/inviter.mjs` (par lots de 50, `--dry` pour simuler). Date d'ouverture et décompte : `NEXT_PUBLIC_OUVERTURE=2026-10-23T08:00:00+02:00`. Lien d'acquisition traçable : `labourseauxpermut.fr/?via=peps`.
 
 ## Tester en local
 `npm run dev` dans un terminal, puis dans un autre : `node scripts/test-local.mjs http://localhost:3000`. Le script crée 3 comptes vérifiés (test1 Montpellier→Nice, test2 Nice→Montpellier, test3 gendarme), leurs annonces, lance le matching et vérifie la correspondance. Mot de passe : `Test1234!`. `--reset` pour tout supprimer.

@@ -1,9 +1,11 @@
 import { Resend } from 'resend';
-const resend = new Resend(process.env.RESEND_API_KEY);
+
+let client: Resend | null = null;
+const resend = () => { if (!process.env.RESEND_API_KEY) throw new Error('RESEND_API_KEY manquante'); return (client ??= new Resend(process.env.RESEND_API_KEY)); };
 
 /** Mail volontairement neutre : aucune mention de mutation, au cas où l'écran serait visible. */
 export async function envoyerCodePro(to: string, code: string) {
-  await resend.emails.send({
+  await resend().emails.send({
     from: process.env.EMAIL_FROM!,
     to,
     subject: `Votre code : ${code}`,

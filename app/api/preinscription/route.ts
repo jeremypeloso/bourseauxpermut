@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     try {
       await new Resend(process.env.RESEND_API_KEY).emails.send({
         from: process.env.EMAIL_FROM!, to: email, subject: 'Votre pré-inscription est enregistrée',
-        text: `Bonjour,\n\nVotre pré-inscription est bien enregistrée. Vous recevrez un message le jour de l'ouverture, avec votre accès.\n\nD'ici là, rien ne vous est demandé, et cette adresse ne sert qu'à ça.\n\nLa Bourse aux permut'`,
+        text: `Bonjour,\n\nVotre pré-inscription est bien enregistrée. Ouverture le ${new Date(process.env.NEXT_PUBLIC_OUVERTURE || '2026-10-23T08:00:00+02:00').toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })} : vous recevrez ce jour-là un message avec votre accès.\n\nD'ici là, rien ne vous est demandé, et cette adresse ne sert qu'à ça.\n\nLa Bourse aux permut'`,
       });
     } catch {}
   }

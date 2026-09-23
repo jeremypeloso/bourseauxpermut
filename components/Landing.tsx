@@ -5,8 +5,11 @@ import CarteFrance from './CarteFrance';
 import CompteurLive from './CompteurLive';
 import Vignette from './Vignette';
 import Preinscription from './Preinscription';
+import Compteur from './Compteur';
 
 const PRELAUNCH = process.env.NEXT_PUBLIC_PRELAUNCH === '1';
+const OUVERTURE = process.env.NEXT_PUBLIC_OUVERTURE || '2026-10-23T08:00:00+02:00';
+const OUVERTURE_TXT = new Date(OUVERTURE).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
 
 const HALOS = [{ lat: 48.86, lng: 2.35, n: 203, nom: 'Paris' }, { lat: 45.76, lng: 4.83, n: 61, nom: 'Lyon' }, { lat: 43.30, lng: 5.37, n: 74, nom: 'Marseille' }, { lat: 50.63, lng: 3.06, n: 88, nom: 'Lille' }, { lat: 44.84, lng: -0.58, n: 37, nom: 'Bordeaux' }, { lat: 47.22, lng: -1.55, n: 29, nom: 'Nantes' }, { lat: 48.58, lng: 7.75, n: 46, nom: 'Strasbourg' }, { lat: 43.61, lng: 3.88, n: 52, nom: 'Montpellier' }, { lat: 43.60, lng: 1.44, n: 67, nom: 'Toulouse' }, { lat: 43.70, lng: 7.27, n: 58, nom: 'Nice' }, { lat: 49.44, lng: 1.1, n: 23, nom: 'Rouen' }, { lat: 45.19, lng: 5.72, n: 19, nom: 'Grenoble' }];
 const Ico = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>;
@@ -57,12 +60,12 @@ export default function Landing() {
           <span className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[1.5px] uppercase text-[#8FB4FF]"><i className="w-1.5 h-1.5 rounded-full bg-[#8FF0C0]" />Police · Gendarmerie · Pénitentiaire</span>
           <h1 className="text-[42px] md:text-[64px] font-extrabold tracking-[-2.2px] leading-[1.0] mt-5">La Bourse aux permut&apos;.<br /><span className="text-white/60">Ici, personne ne le sait.</span></h1>
           <p className="text-[17px] md:text-[19px] text-white/80 max-w-[54ch] mt-6">Les annonces de permutation entre collègues, et le matching qui ferme les cycles à 2, 3 ou 4 agents. Sans la hiérarchie, sans les syndicats, sans trace.</p>
-          {PRELAUNCH ? (<div className="mt-8" id="preinscription"><span className="inline-block text-[12px] font-bold tracking-[1.5px] uppercase text-[#8FF0C0] mb-3">Ouverture prochaine</span><Preinscription dark /></div>) : (<><div className="flex flex-wrap gap-3 mt-8"><Btn m="signup" t="Créer mon compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-navy bg-white shadow-[0_16px_40px_-14px_rgba(0,0,0,.6)]" /><Btn m="login" t="J'ai déjà un compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-white bg-white/10 border border-white/25 backdrop-blur" /></div>
+          {PRELAUNCH ? (<div className="mt-8" id="preinscription"><span className="inline-block text-[12px] font-bold tracking-[1.5px] uppercase text-[#8FF0C0] mb-2">Ouverture le {OUVERTURE_TXT}</span><div className="mb-4"><Compteur date={OUVERTURE} /></div><Preinscription dark /></div>) : (<><div className="flex flex-wrap gap-3 mt-8"><Btn m="signup" t="Créer mon compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-navy bg-white shadow-[0_16px_40px_-14px_rgba(0,0,0,.6)]" /><Btn m="login" t="J'ai déjà un compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-white bg-white/10 border border-white/25 backdrop-blur" /></div>
           <div className="text-[12.5px] text-white/50 mt-5">Inscription gratuite avec votre email perso · Vérification carte pro ou mail pro · Premium 9,99 €/mois, sans engagement</div></>)}
         </div></W>
       </section>
       <div className="bg-navy text-white"><W cls="grid grid-cols-2 md:grid-cols-4 gap-y-3 py-5">
-        {[PRELAUNCH ? [<CompteurLive key="p" cle="preinscrits" initial={0} />, 'collègues inscrits pour l\'ouverture'] : [<CompteurLive key="c" cle="en_recherche" initial={0} />, 'collègues en recherche en ce moment'], [<CompteurLive key="a" cle="annonces_actives" initial={0} />, 'annonces actives'], [<CompteurLive key="f" cle="cycles_fermes" initial={0} />, 'permutations abouties'], ['0', "nom visible avant l'accord de tous"]].map(([n, t], i) => <div key={i} className="md:border-l md:border-white/10 md:pl-5 first:border-0 first:pl-0"><b className="block text-[30px] font-extrabold tracking-[-1px] text-[#8FF0C0] leading-none">{n}</b><span className="text-[12.5px] text-[#A9B7D6]">{t}</span></div>)}
+        {[PRELAUNCH ? [new Date(OUVERTURE).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }), 'ouverture, à 8 h'] : [<CompteurLive key="c" cle="en_recherche" initial={0} />, 'collègues en recherche en ce moment'], [<CompteurLive key="a" cle="annonces_actives" initial={0} />, 'annonces actives'], [<CompteurLive key="f" cle="cycles_fermes" initial={0} />, 'permutations abouties'], ['0', "nom visible avant l'accord de tous"]].map(([n, t], i) => <div key={i} className="md:border-l md:border-white/10 md:pl-5 first:border-0 first:pl-0"><b className="block text-[30px] font-extrabold tracking-[-1px] text-[#8FF0C0] leading-none">{n}</b><span className="text-[12.5px] text-[#A9B7D6]">{t}</span></div>)}
       </W></div>
 
       {/* DÉFIS */}
@@ -77,18 +80,57 @@ export default function Landing() {
       </W></section>
 
       {/* SOLUTION */}
-      <section id="solution" className="py-20 bg-gradient-to-br from-navy2 to-navy text-white"><W cls="grid lg:grid-cols-[1.1fr_1fr] gap-14 items-center">
+      <section id="solution" className="py-20 bg-gradient-to-br from-navy2 to-navy text-white"><W cls="grid lg:grid-cols-[1fr_1.2fr] gap-14 items-center">
         <div>
           <span className="inline-flex items-center gap-2 text-[12px] font-bold tracking-[1.5px] uppercase text-[#8FB4FF]"><i className="w-1.5 h-1.5 rounded-full bg-[#8FF0C0]" />La solution</span>
           <div className="mt-3"><H2 t="Pensée par un ancien policier, pour des collègues." light /></div>
           <p className="text-[16px] text-[#A9B7D6] mt-3">La Bourse aux permut&apos; réunit au même endroit les annonces de permutation, anonymes par construction, et un matching qui recroise toutes les heures les souhaits de tous les agents vérifiés. Police, gendarmerie, pénitentiaire, chacun dans son couloir.</p>
           <div className="grid sm:grid-cols-2 gap-3 mt-6">{[['Réservée aux agents vérifiés', 'Carte pro lue puis détruite, ou code sur votre mail pro'], ['Anonyme par construction', 'Un grade, une affectation, des villes. Jamais un nom.'], ['Matching à 2, 3 ou 4', 'Les cycles que personne ne voit, fermés automatiquement'], ['Zéro accès extérieur', 'Ni administration, ni hiérarchie, ni syndicats']].map(([b, s]) => <div key={b} className="bg-white/[.07] border border-white/10 rounded-2xl px-3.5 py-3"><b className="block text-[14px]">{b}</b><span className="text-[12.5px] text-[#A9B7D6]">{s}</span></div>)}</div>
         </div>
-        <div className="w-[300px] md:w-[320px] mx-auto bg-white rounded-[34px] border-8 border-[#0B1426] p-3 shadow-[0_40px_80px_-30px_rgba(0,0,0,.6)] text-[#141A26]">
-          <div className="flex justify-between text-[11px] font-bold text-navy mb-2.5"><span>La Bourse aux permut&apos;</span><span>9:41</span></div>
-          <div className="bg-paper rounded-xl px-3 py-2 text-[12px] text-[#A3AAB8] mb-2.5">Une ville, un département, un service…</div>
-          <div className="flex flex-col gap-2">{ANN.slice(0, 3).map((a, i) => <Ann key={i} a={a} compact />)}</div>
-          <div className="bg-navy text-white rounded-xl px-3 py-2.5 text-[11px] mt-2"><b className="block text-[12px]">Un cycle à 3 s&apos;est fermé pour vous</b><span className="text-[#A9B7D6]">Montpellier → Nice → Toulouse · 92 %</span></div>
+        <div className="relative mx-auto w-full max-w-[640px] lg:max-w-none aspect-[4/3] text-[#141A26]">
+          {/* Écran de bureau */}
+          <div className="absolute left-0 top-0 w-[74%]">
+            <div className="rounded-[14px] bg-[#0B1426] p-[1.6%] pb-[3.2%] shadow-[0_40px_80px_-30px_rgba(0,0,0,.7)] border border-white/10">
+              <div className="rounded-[8px] overflow-hidden bg-[#F4F6FA] aspect-[16/10] relative">
+                <div className="absolute inset-0 w-[154%] h-[154%] origin-top-left scale-[.65]">
+                <div className="flex items-center gap-2 bg-white px-2.5 py-1.5 border-b border-[#E6E9F0]"><img src="/logo.png" alt="" className="h-3.5 w-auto" /><span className="bg-bleu text-white text-[7px] font-bold px-1.5 py-0.5 rounded">+ Déposer une annonce</span><span className="flex-1 bg-paper rounded px-2 py-0.5 text-[7px] text-[#A3AAB8]">Une ville, un département, un service…</span><span className="text-[7px] font-semibold text-[#6F7789]">Annonces · Mes matchs · Favoris · Compte</span></div>
+                <div className="flex gap-1 px-2.5 py-1 bg-white border-b border-[#E6E9F0]">{['Toutes', 'Police', 'Gendarmerie', 'Pénitentiaire', 'Vers mon dép.', 'Mises en avant'].map((c, i) => <span key={c} className={`text-[6.5px] font-semibold px-1.5 py-0.5 rounded-full border ${i === 0 ? 'bg-navy text-white border-navy' : 'border-[#E6E9F0] text-[#3B4457]'}`}>{c}</span>)}</div>
+                <div className="grid grid-cols-[72px_1fr] gap-2 p-2">
+                  <div className="space-y-1.5">
+                    <div className="rounded-md bg-navy text-white p-1.5"><b className="block text-[7px]">Matching intelligent</b><span className="text-[6px] text-[#A9B7D6]">3 correspondances</span><span className="block mt-1 bg-white text-navy text-[6px] font-bold rounded px-1 py-0.5 text-center">Voir mes matchs</span></div>
+                    {['Institution', 'Poste actuel', 'Souhaite aller vers'].map(t => <div key={t} className="rounded-md bg-white border border-[#E6E9F0] p-1.5"><b className="block text-[6.5px] text-navy">{t}</b><i className="block h-1 w-3/4 bg-[#E6E9F0] rounded mt-1" /><i className="block h-1 w-1/2 bg-[#E6E9F0] rounded mt-0.5" /></div>)}
+                  </div>
+                  <div className="space-y-1.5">
+                    <div className="flex justify-between items-end"><b className="text-[8.5px] text-navy">Annonces de permutation</b><span className="text-[6px] text-[#6F7789]">triées par pertinence pour vous</span></div>
+                    {ANN.slice(0, 4).map((a, i) => <Ann key={i} a={a} compact />)}
+                  </div>
+                </div>
+                </div>
+              </div>
+            </div>
+            <div className="mx-auto w-[22%] h-[7%] bg-gradient-to-b from-[#C9CFDA] to-[#9AA3B2] mt-[-1px] [clip-path:polygon(15%_0,85%_0,100%_100%,0_100%)]" />
+            <div className="mx-auto w-[46%] h-[6px] rounded-full bg-[#B8BFCB] shadow-[0_6px_14px_-4px_rgba(0,0,0,.35)]" />
+          </div>
+          {/* Portable */}
+          <div className="absolute right-0 bottom-[2%] w-[54%]">
+            <div className="mx-[6%] rounded-t-[10px] bg-[#0B1426] p-[1.8%] pb-0 shadow-[0_30px_60px_-24px_rgba(0,0,0,.7)] border border-white/10 border-b-0">
+              <div className="rounded-t-[5px] overflow-hidden bg-[#F4F6FA] aspect-[16/10] relative">
+                <div className="absolute inset-0 w-[143%] h-[143%] origin-top-left scale-[.7]">
+                <div className="flex items-center gap-2 bg-white px-2 py-1 border-b border-[#E6E9F0]"><img src="/logo.png" alt="" className="h-3 w-auto" /><span className="flex-1 bg-paper rounded px-1.5 py-0.5 text-[6px] text-[#A3AAB8]">Rechercher…</span><span className="text-[6px] font-semibold text-bleu">Mes matchs</span></div>
+                <div className="p-2">
+                  <div className="flex justify-between items-end mb-1.5"><b className="text-[8px] text-navy">Mes matchs</b><span className="text-[6px] text-[#6F7789]">3 correspondances · 1 cycle fermé</span></div>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    {[['Cycle à 3', '92%', 'Montpellier → Nice → Lyon', '#22B573', true], ['Directe', '74%', 'Montpellier ↔ Nice', '#F2A900', false], ['Cycle à 4', '68%', 'Montpellier → Nice → Lyon → Marseille', '#F2A900', false], ['Directe', '61%', 'Montpellier ↔ Béziers', '#F2A900', false]].map(([t, p, r, c, top], i) => (
+                      <div key={i} className={`rounded-md bg-white border p-1.5 ${top ? 'border-[#BFE9D3]' : 'border-[#E6E9F0]'}`}><div className="flex justify-between items-center"><b className="text-[7px] text-navy">{t}</b><span className="w-5 h-5 rounded-full flex items-center justify-center text-[5.5px] font-extrabold text-navy" style={{ background: `conic-gradient(${c} ${parseInt(String(p))}%, #E6E9F0 0)` }}><span className="w-3.5 h-3.5 rounded-full bg-white flex items-center justify-center">{p}</span></span></div><span className="block text-[6px] text-[#3B4457] mt-0.5">{r}</span><span className={`block mt-1 text-[6px] font-bold rounded px-1 py-0.5 text-center ${top ? 'bg-bleu text-white' : 'border border-[#E6E9F0] text-navy'}`}>{top ? 'Proposer la mise en relation' : 'Voir le détail'}</span></div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-3 gap-1.5 mt-1.5">{[['24 ×', 'par jour, souhaits recroisés'], ['0', 'nom visible avant accord'], ['2 à 4', 'agents par cycle']].map(([n, t]) => <div key={t} className="rounded-md bg-white border border-[#E6E9F0] p-1.5"><b className="block text-[9px] text-navy leading-none">{n}</b><span className="text-[5.5px] text-[#6F7789]">{t}</span></div>)}</div>
+                </div>
+                </div>
+              </div>
+            </div>
+            <div className="h-[10px] rounded-b-[8px] bg-gradient-to-b from-[#D9DEE7] to-[#AEB6C4] shadow-[0_10px_20px_-8px_rgba(0,0,0,.5)] relative"><span className="absolute left-1/2 -translate-x-1/2 top-0 w-[12%] h-[3px] rounded-b bg-[#8F98A8]" /></div>
+          </div>
         </div>
       </W></section>
 
@@ -158,7 +200,7 @@ export default function Landing() {
       <section id="cta" className="py-20 text-center text-white bg-gradient-to-br from-bleu to-bleud"><W>
         <H2 t="Rejoignez la Bourse aux permut'" light />
         <p className="text-[16px] text-white/85 max-w-[56ch] mx-auto mt-3 mb-7">Des milliers de collègues attendent une mutation qui ne vient pas. Beaucoup veulent exactement le poste que vous voulez quitter. Ils ne le savent pas encore.</p>
-        {PRELAUNCH ? <div className="max-w-[640px] mx-auto text-left"><Preinscription dark /></div> : <div className="flex flex-wrap gap-3 justify-center"><Btn m="signup" t="Créer mon compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-navy bg-white" /><Btn m="login" t="J'ai déjà un compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-white bg-white/10 border border-white/25" /></div>}
+        {PRELAUNCH ? <div className="max-w-[640px] mx-auto text-left"><div className="flex flex-wrap items-center gap-3 mb-4"><span className="text-[13px] font-bold tracking-[1.5px] uppercase text-white/85">Ouverture le {OUVERTURE_TXT}</span><Compteur date={OUVERTURE} /></div><Preinscription dark /></div> : <div className="flex flex-wrap gap-3 justify-center"><Btn m="signup" t="Créer mon compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-navy bg-white" /><Btn m="login" t="J'ai déjà un compte" cls="px-7 py-4 rounded-2xl text-[16px] font-bold text-white bg-white/10 border border-white/25" /></div>}
       </W></section>
 
       <footer className="bg-navy text-[#A9B7D6] py-11 text-[13px]"><W cls="grid md:grid-cols-[1.4fr_1fr_1fr_1fr] gap-7">
