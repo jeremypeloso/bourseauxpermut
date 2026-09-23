@@ -1,14 +1,17 @@
-import TabBar from '@/components/TabBar';
+import TopBar from '@/components/TopBar';
 import { redirect } from 'next/navigation';
-import { currentUser } from '@/lib/supabase-server';
+import { currentUser, supabaseServer } from '@/lib/supabase-server';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const user = await currentUser();
   if (!user) redirect('/');
+  const sb = supabaseServer();
+  const { data: profil } = await sb.from('profils').select('institution').eq('id', user.id).maybeSingle();
+  const { data: m } = await sb.from('v_mes_correspondances').select('id').eq('est_moi', true);
   return (
-    <div className="mx-auto max-w-[430px] min-h-screen flex flex-col">
-      <div className="flex-1 px-4 pt-[max(12px,env(safe-area-inset-top))] pb-5">{children}</div>
-      <TabBar />
+    <div className="min-h-screen bg-[#F4F6FA] pb-20 md:pb-0">
+      <TopBar nbMatchs={new Set((m ?? []).map(x => x.id)).size} institution={profil?.institution} />
+      <main className="max-w-[1200px] mx-auto px-4 md:px-5 py-5 md:py-6">{children}</main>
     </div>
   );
 }

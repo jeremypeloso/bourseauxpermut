@@ -14,8 +14,8 @@ export default function CompteurLive({ cle = 'en_recherche', initial = 0, classN
   useEffect(() => {
     const sb = supabaseBrowser();
     sb.from('stats_publiques').select('valeur').eq('cle', cle).single().then(({ data }) => { if (data) setVal(data.valeur); });
-    const ch = sb.channel('stats_publiques').on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'stats_publiques', filter: `cle=eq.${cle}` }, (p: any) => setVal(p.new.valeur)).subscribe();
-    return () => { sb.removeChannel(ch); };
+    const ch = sb.channel(`stats_${cle}_${Math.random().toString(36).slice(2)}`).on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'stats_publiques', filter: `cle=eq.${cle}` }, (p: any) => setVal(p.new.valeur)).subscribe();
+    return () => { try { sb.removeChannel(ch); } catch {} };
   }, [cle]);
 
   useEffect(() => {

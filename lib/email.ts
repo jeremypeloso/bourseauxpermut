@@ -7,6 +7,6 @@ export async function envoyerCodePro(to: string, code: string) {
     from: process.env.EMAIL_FROM!,
     to,
     subject: `Votre code : ${code}`,
-    text: `Bonjour,\n\nVotre code de confirmation est : ${code}\nIl reste valable 7 jours.\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\nHors Boîte`,
+    text: `Bonjour,\n\nVotre code de confirmation est : ${code}\nIl reste valable 7 jours.\n\nSi vous n'êtes pas à l'origine de cette demande, ignorez ce message.\n\nLa Bourse aux permut'`,
   });
 }

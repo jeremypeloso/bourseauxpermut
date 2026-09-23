@@ -17,7 +17,7 @@ export default function AuthModal({ open, initial, onClose }: { open: boolean; i
     setBusy(true); setErr(null);
     // La session est toujours ouverte sur l'adresse personnelle : on ne veut jamais
     // qu'un lien de connexion atterrisse sur un poste de service.
-    const next = mode === 'signup' ? `/onboarding?voie=${voie}${voie === 2 && pro ? `&pro=${encodeURIComponent(pro)}` : ''}` : '/accueil';
+    const next = mode === 'signup' ? `/onboarding?voie=${voie}${voie === 2 && pro ? `&pro=${encodeURIComponent(pro)}` : ''}` : '/annonces';
     const { error } = await supabaseBrowser().auth.signInWithOtp({
       email, options: { emailRedirectTo: `${location.origin}/auth/callback?next=${encodeURIComponent(next)}` },
     });
@@ -34,7 +34,7 @@ export default function AuthModal({ open, initial, onClose }: { open: boolean; i
         <div className="flex gap-1.5"><Tab m="signup" t="Créer mon compte" /><Tab m="login" t="Connexion" /></div>
 
         {envoye ? (
-          <div className="mt-6 text-center py-8"><b className="text-navy text-lg">Lien envoyé sur {email}</b><p className="sub mt-2">Ouvrez-le depuis l&apos;appareil sur lequel vous voulez utiliser Hors Boîte. {mode === 'signup' && voie === 2 ? 'Le code pro vous sera demandé juste après.' : ''}</p></div>
+          <div className="mt-6 text-center py-8"><b className="text-navy text-lg">Lien envoyé sur {email}</b><p className="sub mt-2">Ouvrez-le depuis l&apos;appareil sur lequel vous voulez utiliser La Bourse aux permut&apos;. {mode === 'signup' && voie === 2 ? 'Le code pro vous sera demandé juste après.' : ''}</p></div>
         ) : mode === 'signup' ? (
           <>
             <h3 className="text-[24px] font-extrabold tracking-tight text-navy mt-4">Comment voulez-vous prouver que vous êtes des nôtres ?</h3>

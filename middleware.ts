@@ -14,7 +14,7 @@ export async function middleware(req: NextRequest) {
   const { data: { user } } = await supabase.auth.getUser();
   const path = req.nextUrl.pathname;
   if (!user && !PUBLIC.some(p => path === p || path.startsWith(p + '/'))) {
-    return NextResponse.redirect(new URL('/', req.url));
+    return NextResponse.redirect(new URL('/', process.env.NEXT_PUBLIC_SITE_URL || req.nextUrl.origin));
   }
   return res;
 }

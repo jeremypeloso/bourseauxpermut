@@ -1,5 +1,5 @@
 -- =====================================================================
--- Hors Boîte — schéma v1 (police, gendarmerie, pénitentiaire)
+-- La Bourse aux permut' — schéma v1 (police, gendarmerie, pénitentiaire)
 -- Principe : la table lue par le matching ne contient aucune identité.
 -- L'identité vit dans une table séparée, chiffrée côté serveur (Next.js),
 -- révélée uniquement quand tous les agents d'un cycle ont accepté.

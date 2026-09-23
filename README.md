@@ -1,30 +1,30 @@
-# Hors Boîte
+# La Bourse aux permut'
 
 Permutation de postes, écoute anonyme et préparation de l'après pour policiers, gendarmes et personnels pénitentiaires.
 Next.js 14 (App Router) · Supabase (Auth, Postgres, RLS) · Vercel (hébergement, cron) · Resend (mails) · Stripe (abonnement 9,99 €/mois).
 
 ## 1. GitHub
 ```bash
-git init && git add -A && git commit -m "init Hors Boîte"
-gh repo create horsboite --private --source=. --push   # ou créer le repo sur github.com puis git remote add origin … && git push -u origin main
+git init && git add -A && git commit -m "init La Bourse aux permut'"
+gh repo create labourseauxpermut --private --source=. --push   # ou créer le repo sur github.com puis git remote add origin … && git push -u origin main
 ```
 
 ## 2. Supabase
 1. Créer un projet (région **Frankfurt** ou **Paris**, pour rester en UE).
-2. SQL Editor → exécuter dans l'ordre `0001_schema.sql`, `0002_verification_ou.sql`, `0003_stats_publiques.sql`, `0004_annonces.sql` (dossier `supabase/migrations`).
-3. Authentication → Providers → Email : activer, **désactiver "Confirm email"** n'est pas nécessaire (on utilise le lien magique), mettre le **Site URL** sur `https://horsboite.fr` et ajouter `https://horsboite.fr/auth/callback` et `http://localhost:3000/auth/callback` dans Redirect URLs.
+2. SQL Editor → exécuter dans l'ordre `0001` à `0005` (dossier `supabase/migrations`).
+3. Authentication → Providers → Email : activer, **désactiver "Confirm email"** n'est pas nécessaire (on utilise le lien magique), mettre le **Site URL** sur `https://labourseauxpermut.fr` et ajouter `https://labourseauxpermut.fr/auth/callback` et `http://localhost:3000/auth/callback` dans Redirect URLs.
 4. Authentication → Email Templates → "Magic Link" : sujet neutre, par exemple `Votre lien de connexion`, sans mention de mutation.
 5. Project settings → API : copier URL, anon key, service_role key.
 
 ## 3. Resend
-1. Ajouter le domaine `horsboite.fr`, créer les enregistrements DNS (DKIM, SPF, DMARC) chez le registrar.
-2. Créer une clé API. Expéditeur : `Hors Boîte <noreply@horsboite.fr>`.
-3. Optionnel mais recommandé : dans Supabase → Authentication → SMTP, utiliser Resend en SMTP (`smtp.resend.com`, port 465, user `resend`, password = clé API) pour que les liens magiques partent aussi de horsboite.fr.
+1. Ajouter le domaine `labourseauxpermut.fr`, créer les enregistrements DNS (DKIM, SPF, DMARC) chez le registrar.
+2. Créer une clé API. Expéditeur : `La Bourse aux permut' <noreply@labourseauxpermut.fr>`.
+3. Optionnel mais recommandé : dans Supabase → Authentication → SMTP, utiliser Resend en SMTP (`smtp.resend.com`, port 465, user `resend`, password = clé API) pour que les liens magiques partent aussi de labourseauxpermut.fr.
 
 ## 4. Stripe
-1. Produit "Hors Boîte Premium", prix récurrent **9,99 € / mois**, copier le `price_…` → `STRIPE_PRICE_ID`.
+1. Produit "La Bourse aux permut' Premium", prix récurrent **9,99 € / mois**, copier le `price_…` → `STRIPE_PRICE_ID`.
    Produit "Mise en avant 7 jours", prix unique **4,99 €** → `STRIPE_BOOST_PRICE_ID`.
-2. Developers → Webhooks → endpoint `https://horsboite.fr/api/stripe/webhook`, événements : `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `checkout.session.completed`. Copier le `whsec_…`.
+2. Developers → Webhooks → endpoint `https://labourseauxpermut.fr/api/stripe/webhook`, événements : `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, `checkout.session.completed`. Copier le `whsec_…`.
 3. Settings → Customer portal : activer, pour que la résiliation se fasse en un geste.
 
 ## 5. Vercel
@@ -38,7 +38,7 @@ vercel env add CRON_SECRET           # openssl rand -hex 32
 vercel --prod
 ```
 Le cron `/api/cron/matching` (toutes les heures) est déclaré dans `vercel.json` ; Vercel envoie automatiquement l'en-tête `Authorization: Bearer $CRON_SECRET`.
-Domaine : ajouter `horsboite.fr` dans Vercel → Domains, puis les enregistrements DNS indiqués.
+Domaine : ajouter `labourseauxpermut.fr` dans Vercel → Domains, puis les enregistrements DNS indiqués.
 
 ## 6. Local
 ```bash
@@ -46,6 +46,9 @@ cp .env.example .env.local   # remplir
 npm install
 npm run dev
 ```
+
+## Périmètre v1
+Permut' uniquement : annonces anonymes (style petites annonces) + matching intelligent (cycles à 2, 3, 4). Les modules Écoute et L'après sont retirés de l'app (tables conservées en base pour plus tard).
 
 ## Structure
 - `app/onboarding` : institution → discrétion → carte pro (OCR éphémère) → mail pro (code 7 jours) → récap

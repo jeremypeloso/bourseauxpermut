@@ -39,7 +39,7 @@ function OnboardingInner() {
       const { data: { user } } = await sb.auth.getUser();
       if (!user) return r.replace('/login');
       const { data } = await sb.from('profils').select('institution, verifie_carte, verifie_mail_pro').eq('id', user.id).maybeSingle();
-      if (data) { setInst(data.institution); if (data.verifie_carte || data.verifie_mail_pro) r.replace('/accueil'); }
+      if (data) { setInst(data.institution); if (data.verifie_carte || data.verifie_mail_pro) r.replace('/annonces'); }
     })();
   }, [r]);
 
@@ -72,7 +72,7 @@ function OnboardingInner() {
   const Dots = () => <div className="flex justify-center gap-1.5 my-3">{[0,1,2,3,4].map(i => <i key={i} className={`h-2 rounded-full ${i === etape ? 'w-5 bg-bleu' : 'w-2 bg-[#D5D9E2]'}`} />)}</div>;
 
   return (
-    <main className="flex-1 flex flex-col px-5 pt-[max(12px,env(safe-area-inset-top))] pb-6">
+    <main className="min-h-screen bg-paper flex items-start justify-center md:py-10"><div className="w-full md:max-w-[560px] md:bg-white md:rounded-[26px] md:shadow-[0_20px_60px_-30px_rgba(15,27,51,.35)] flex flex-col px-5 md:px-8 pt-[max(12px,env(safe-area-inset-top))] md:pt-6 pb-6 min-h-screen md:min-h-0">
       <Dots />
       {etape === 0 && (<>
         <Image src="/porte.png" alt="" width={90} height={110} className="mx-auto drop-shadow-xl" />
@@ -93,7 +93,7 @@ function OnboardingInner() {
       {etape === 1 && (<>
         <Image src="/porte.png" alt="" width={90} height={110} className="mx-auto drop-shadow-xl" />
         <h1 className="h1 text-center mt-3">Personne ne saura<br />que vous cherchez</h1>
-        <p className="sub text-center mt-2">Hors Boîte a été conçue par un ancien fonctionnaire de police, pour les policiers, les gendarmes et les personnels pénitentiaires. La discrétion administrative n&apos;est pas une option, c&apos;est la base.</p>
+        <p className="sub text-center mt-2">La Bourse aux permut&apos; a été conçue par un ancien fonctionnaire de police, pour les policiers, les gendarmes et les personnels pénitentiaires. La discrétion administrative n&apos;est pas une option, c&apos;est la base.</p>
         <div className="card mt-4">
           {PROMESSES.map(([t, s]) => (
             <div key={t} className="flex gap-3 py-2.5 border-t border-[#E6E9F0] first:border-t-0">
@@ -140,13 +140,13 @@ function OnboardingInner() {
         {msg && <p className="text-[12.5px] text-navy mt-3">{msg}</p>}
         <button className="btn mt-3" onClick={confirmer} disabled={busy || code.replace(/\s/g, '').length !== 6}>Confirmer le code</button>
         <button className="btn-ghost mt-2" onClick={() => setEtape(2)}>Je préfère photographier ma carte pro</button>
-        <button className="btn-ghost mt-2" onClick={() => r.push('/profil')}>Plus tard, je remplis mes souhaits</button>
+        <button className="btn-ghost mt-2" onClick={() => r.push('/deposer')}>Plus tard, je remplis mes souhaits</button>
       </>)}
 
       {etape === 4 && (<>
         <div className="w-20 h-20 rounded-3xl bg-gradient-to-br from-[#3ED18B] to-[#149A5E] mx-auto flex items-center justify-center text-white text-3xl font-extrabold mt-2">✓</div>
         <h1 className="h1 text-center mt-4">Compte vérifié</h1>
-        <p className="sub text-center mt-2">Ce que Hors Boîte conserve de vous, et rien d&apos;autre.</p>
+        <p className="sub text-center mt-2">Ce que La Bourse aux permut&apos; conserve de vous, et rien d&apos;autre.</p>
         <div className="card mt-4">
           <div className="kv"><span>Nom et prénom</span><b>Chiffrés, table séparée</b></div>
           <div className="kv"><span>Matricule</span><b>Empreinte uniquement</b></div>
@@ -155,9 +155,9 @@ function OnboardingInner() {
           <div className="kv"><span>Corps, grade, affectation</span><b>Pour le matching</b></div>
         </div>
         <div className="flex-1" />
-        <button className="btn-dark mt-4" onClick={() => r.push('/profil')}>Renseigner mes souhaits</button>
+        <button className="btn-dark mt-4" onClick={() => r.push('/deposer')}>Renseigner mes souhaits</button>
       </>)}
-    </main>
+    </div></main>
   );
 }
 
