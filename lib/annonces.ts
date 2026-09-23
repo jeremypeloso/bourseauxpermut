@@ -4,7 +4,7 @@ export const estBoost = (a: any) => !!a.mise_en_avant_jusqua && new Date(a.mise_
 export const entete = (a: any) => ({
   id: a.id, grade: a.grade, institution: a.institution, ville: a.services?.ville ?? null, departement: a.services?.departement ?? null,
   cibles_villes: (a.cibles ?? []).map((c: any) => c.ville ?? c.departement).filter(Boolean).slice(0, 3),
-  mise_en_avant: estBoost(a), created_at: a.created_at, flou: true,
+  mise_en_avant: estBoost(a), created_at: a.created_at, flou: true, demo: !!a.demo,
 });
 export const clair = (a: any, mienne: boolean, score: number) => ({
   ...entete(a), flou: false, mienne, score,

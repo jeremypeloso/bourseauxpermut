@@ -1,6 +1,7 @@
 'use client';
 import { useState } from 'react';
 import { FRANCE_D, FRANCE_H, projeter } from '@/lib/france-path';
+import { OUTRE_MER } from '@/lib/outre-mer';
 
 type Pt = { lat: number; lng: number; label?: string; cls: 'me' | 'wish' | 'other' };
 type Halo = { lat: number; lng: number; n: number; nom?: string };
@@ -10,7 +11,7 @@ type Halo = { lat: number; lng: number; n: number; nom?: string };
  * Halos = collègues en recherche par ville (jamais qui), animés en vagues décalées.
  * Cycle = tracés qui se dessinent en boucle. Survol d'une ville = nombre de collègues.
  */
-export default function CarteFrance({ points, halos, cycle, anime = true }: { points: Pt[]; halos: Halo[]; cycle?: [number, number][]; anime?: boolean }) {
+export default function CarteFrance({ points, halos, cycle, anime = true, outreMer = false, omCounts }: { points: Pt[]; halos: Halo[]; cycle?: [number, number][]; anime?: boolean; outreMer?: boolean; omCounts?: Record<string, number> }) {
   const [hover, setHover] = useState<number | null>(null);
   const col = { me: '#1E6BFF', wish: '#22B573', other: '#E8232B' };
   const curve = (a: readonly [number, number], b: readonly [number, number], off: number) => {
@@ -22,10 +23,10 @@ export default function CarteFrance({ points, halos, cycle, anime = true }: { po
   const hp = h ? projeter(h.lng, h.lat) : null;
 
   return (
+    <div>
     <svg viewBox={`0 0 340 ${FRANCE_H}`} className="w-full block select-none">
       <defs>
         <marker id="mk" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1E6BFF" /></marker>
-        <filter id="sh" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="6" stdDeviation="8" floodColor="#0F1B33" floodOpacity=".18" /></filter>
         <style>{`
           @keyframes hb-wave { 0% { transform: scale(.6); opacity: .55 } 100% { transform: scale(2.1); opacity: 0 } }
           @keyframes hb-draw { 0% { stroke-dashoffset: 400; opacity: 0 } 10% { opacity: 1 } 60% { stroke-dashoffset: 0; opacity: 1 } 85% { opacity: 1 } 100% { stroke-dashoffset: 0; opacity: 0 } }
@@ -36,7 +37,7 @@ export default function CarteFrance({ points, halos, cycle, anime = true }: { po
           @media (prefers-reduced-motion: reduce) { .hb-wave, .hb-draw, .hb-dash { animation: none } .hb-draw { stroke-dasharray: 5 6; opacity: 1 } }
         `}</style>
       </defs>
-      <path d={FRANCE_D} fill="#fff" stroke="#CBD3E3" strokeWidth="1.2" strokeLinejoin="round" filter="url(#sh)" />
+      <path d={FRANCE_D} fill="#fff" stroke="#CBD3E3" strokeWidth="1.2" strokeLinejoin="round" />
 
       {halos.map((hl, i) => {
         const [x, y] = projeter(hl.lng, hl.lat); const r = 6 + Math.sqrt(hl.n) / 2.2;
@@ -64,13 +65,27 @@ export default function CarteFrance({ points, halos, cycle, anime = true }: { po
         </g>
       ); })}
 
-      {h && hp && (
+      {h && hp && (() => { const bx = Math.min(Math.max(hp[0], 46), 340 - 46); const above = hp[1] > 46; const by = above ? hp[1] - 40 : hp[1] + 16; return (
         <g pointerEvents="none">
-          <rect x={hp[0] - 44} y={hp[1] - 36} width="88" height="24" rx="8" fill="#0F1B33" />
-          <text x={hp[0]} y={hp[1] - 26} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#fff" fontFamily="Helvetica,Arial">{h.nom ?? ''}</text>
-          <text x={hp[0]} y={hp[1] - 17} textAnchor="middle" fontSize="8" fill="#8FF0C0" fontFamily="Helvetica,Arial">{h.n} en recherche</text>
+          <rect x={bx - 44} y={by} width="88" height="26" rx="8" fill="#0F1B33" />
+          <text x={bx} y={by + 11} textAnchor="middle" fontSize="8.5" fontWeight="700" fill="#fff" fontFamily="Helvetica,Arial">{h.nom ?? ''}</text>
+          <text x={bx} y={by + 21} textAnchor="middle" fontSize="8" fill="#8FF0C0" fontFamily="Helvetica,Arial">{h.n} en recherche</text>
         </g>
-      )}
+      ); })()}
     </svg>
+    {outreMer && (
+      <div className="mt-3">
+        <div className="text-[10.5px] font-bold tracking-[.6px] uppercase text-[#6F7789] mb-1.5 ml-0.5">Outre-mer</div>
+        <div className="grid grid-cols-4 gap-2">
+          {OUTRE_MER.map(o => { const n = omCounts?.[o.nom]; return (
+            <div key={o.nom} className="bg-white/75 rounded-xl px-1 py-2 text-center min-w-0">
+              <svg viewBox="0 0 56 56" className="w-11 h-11 mx-auto block"><path d={o.d} fill="#fff" stroke="#CBD3E3" strokeWidth="1.2" strokeLinejoin="round" />{n ? <><circle cx="28" cy="28" r={4 + Math.sqrt(n) / 1.6} fill="#1E6BFF" opacity=".14" /><circle cx="28" cy="28" r="2" fill="#1E6BFF" opacity=".7" /></> : null}</svg>
+              <b className="block text-[9.5px] text-navy truncate">{o.nom}</b>{n ? <small className="text-[9px] text-[#6F7789]">{n}</small> : null}
+            </div>
+          ); })}
+        </div>
+      </div>
+    )}
+    </div>
   );
 }

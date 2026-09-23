@@ -14,6 +14,7 @@ export async function POST(req: NextRequest) {
   if (!premium) return NextResponse.json({ ok: false, paywall: true }, { status: 402 });
   const { data: a } = await admin.from('annonces').select('*').eq('id', annonce_id).eq('statut', 'active').single();
   if (!a || a.institution !== moi!.institution || a.profil_id === user.id) return NextResponse.json({ ok: false, message: 'Annonce indisponible.' }, { status: 404 });
+  if (a.demo) return NextResponse.json({ ok: false, message: 'Annonce d\'exemple : elle montre le format en attendant les premières vraies annonces. Déposez la vôtre, le matching fera le reste.' }, { status: 400 });
   const { data: deja } = await admin.from('annonce_reponses').select('correspondance_id').eq('annonce_id', annonce_id).eq('profil_id', user.id).maybeSingle();
   if (deja) return NextResponse.json({ ok: true, correspondance_id: deja.correspondance_id, deja: true });
 

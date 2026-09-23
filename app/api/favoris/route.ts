@@ -17,6 +17,8 @@ export async function POST(req: NextRequest) {
   if (!user) return NextResponse.json({ error: 'non connecté' }, { status: 401 });
   const { annonce_id } = await req.json();
   const admin = supabaseAdmin();
+  const { data: dm } = await admin.from('annonces').select('demo').eq('id', annonce_id).maybeSingle();
+  if (dm?.demo) return NextResponse.json({ ok: false, message: 'Annonce d\'exemple, non sauvegardable.' }, { status: 400 });
   const { data: ex } = await admin.from('favoris').select('annonce_id').eq('profil_id', user.id).eq('annonce_id', annonce_id).maybeSingle();
   if (ex) { await admin.from('favoris').delete().eq('profil_id', user.id).eq('annonce_id', annonce_id); return NextResponse.json({ ok: true, favori: false }); }
   await admin.from('favoris').insert({ profil_id: user.id, annonce_id });

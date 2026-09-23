@@ -12,7 +12,7 @@ gh repo create labourseauxpermut --private --source=. --push   # ou créer le re
 ## 2. Supabase
 1. Créer un projet (région **Frankfurt** ou **Paris**, pour rester en UE).
 2. SQL Editor → exécuter dans l'ordre `0001` à `0005` (dossier `supabase/migrations`).
-3. Authentication → Providers → Email : activer, **désactiver "Confirm email"** n'est pas nécessaire (on utilise le lien magique), mettre le **Site URL** sur `https://labourseauxpermut.fr` et ajouter `https://labourseauxpermut.fr/auth/callback` et `http://localhost:3000/auth/callback` dans Redirect URLs.
+3. Authentication → Providers → Email : activer (confirmation par lien à l'inscription, puis connexion par mot de passe), mettre le **Site URL** sur `https://labourseauxpermut.fr` et ajouter `https://labourseauxpermut.fr/auth/callback` et `http://localhost:3000/auth/callback` dans Redirect URLs.
 4. Authentication → Email Templates → "Magic Link" : sujet neutre, par exemple `Votre lien de connexion`, sans mention de mutation.
 5. Project settings → API : copier URL, anon key, service_role key.
 

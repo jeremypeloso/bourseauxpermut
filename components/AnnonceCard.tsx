@@ -11,7 +11,7 @@ export default function AnnonceCard({ a, onPaywall, onFavori, onProposer }: { a:
   if (a.flou) return (
     <button onClick={onPaywall} className="w-full text-left grid grid-cols-[96px_1fr] md:grid-cols-[150px_1fr] gap-4 bg-white border border-[#E6E9F0] rounded-2xl p-3.5 relative hover:shadow-[0_10px_28px_-16px_rgba(15,27,51,.3)]">
       <Vignette de={a.ville} vers={a.cibles_villes?.[0]} className="w-[96px] h-[72px] md:w-[150px] md:h-[112px]" />
-      <div className="min-w-0"><div className="text-[14.5px] md:text-[16px] font-extrabold text-[#3B4457] tracking-tight pr-20">{titre(a)}</div>
+      <div className="min-w-0"><div className="text-[14.5px] md:text-[16px] font-extrabold text-[#3B4457] tracking-tight pr-20">{titre(a)}{a.demo && <span className="ml-2 pill bg-[#F0F3F8] text-[#6F7789]">Exemple</span>}</div>
         <div className="my-2 space-y-1.5" aria-hidden><i className="block h-2.5 rounded bg-[#E6E9F0] w-3/4 blur-[2px]" /><i className="block h-2.5 rounded bg-[#E6E9F0] w-1/2 blur-[2px]" /></div>{meta}</div>
       <span className="absolute right-3.5 top-3.5 pill-bleu">🔒 Premium</span>
     </button>
@@ -20,14 +20,14 @@ export default function AnnonceCard({ a, onPaywall, onFavori, onProposer }: { a:
     <Link href={`/annonces/${a.id}`} className="grid grid-cols-[96px_1fr] md:grid-cols-[150px_1fr_auto] gap-4 bg-white border border-[#E6E9F0] rounded-2xl p-3.5 hover:shadow-[0_10px_28px_-16px_rgba(15,27,51,.3)]">
       <Vignette de={a.ville} vers={a.cibles_villes?.[0]} cycle={a.accepte_cycles} className="w-[96px] h-[72px] md:w-[150px] md:h-[112px]" />
       <div className="min-w-0">
-        <div className="flex gap-1.5 flex-wrap">{a.mise_en_avant && <span className="pill-amber">Mise en avant</span>}{a.score >= 70 && !a.mienne && <span className="pill-mint">Compatible {a.score} %</span>}{a.mienne && <span className="pill-bleu">Votre annonce</span>}{a.deux_fois && <span className="pill bg-paper text-[#6F7789]">Vérifié deux fois</span>}</div>
+        <div className="flex gap-1.5 flex-wrap">{a.mise_en_avant && <span className="pill-amber">Mise en avant</span>}{a.score >= 70 && !a.mienne && <span className="pill-mint">Compatible {a.score} %</span>}{a.mienne && <span className="pill-bleu">Votre annonce</span>}{a.demo && <span className="pill bg-[#F0F3F8] text-[#6F7789]">Exemple</span>}{a.deux_fois && <span className="pill bg-paper text-[#6F7789]">Vérifié deux fois</span>}</div>
         <div className="text-[14.5px] md:text-[16px] font-extrabold text-navy tracking-tight mt-1">{titre(a)}</div>
         <div className="text-[13.5px] text-[#3B4457]">{[a.type_service, a.anciennete_poste_mois != null && `${Math.floor(a.anciennete_poste_mois / 12)} ans dans le poste`, a.depart_des && `départ dès ${new Date(a.depart_des).toLocaleDateString('fr-FR', { month: 'short', year: 'numeric' })}`].filter(Boolean).join(' · ')}</div>
         {meta}
       </div>
       <div className="col-span-2 md:col-span-1 flex md:flex-col justify-end md:justify-start items-end gap-2">
-        {!a.mienne && onProposer && <button onClick={e => { e.preventDefault(); onProposer(a.id); }} className="bg-bleu text-white font-bold text-[13px] px-3.5 py-2 rounded-xl">Proposer</button>}
-        {!a.mienne && onFavori && <button onClick={e => { e.preventDefault(); onFavori(a.id); }} className="w-9 h-9 rounded-xl border border-[#E6E9F0] bg-white text-[#6F7789]" aria-label="Sauvegarder">♡</button>}
+        {!a.mienne && !a.demo && onProposer && <button onClick={e => { e.preventDefault(); onProposer(a.id); }} className="bg-bleu text-white font-bold text-[13px] px-3.5 py-2 rounded-xl">Proposer</button>}
+        {!a.mienne && !a.demo && onFavori && <button onClick={e => { e.preventDefault(); onFavori(a.id); }} className="w-9 h-9 rounded-xl border border-[#E6E9F0] bg-white text-[#6F7789]" aria-label="Sauvegarder">♡</button>}
       </div>
     </Link>
   );

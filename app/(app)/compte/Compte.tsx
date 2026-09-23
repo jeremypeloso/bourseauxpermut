@@ -39,7 +39,8 @@ export default function Compte({ email, profil, annonce }: any) {
           <div className="kv"><span>Nom et prénom</span><b>Chiffrés, table séparée</b></div><div className="kv"><span>Matricule</span><b>Empreinte uniquement</b></div><div className="kv"><span>Photo de la carte</span><b className="text-[#16804F]">Jamais stockée</b></div>
         </Panel>
         <Panel t="Session">
-          <button className="btn-ghost !py-2.5" onClick={async () => { await sb.auth.signOut(); location.href = '/'; }}>Se déconnecter</button>
+          <Link href="/compte/mot-de-passe" className="btn-ghost !py-2.5">Changer mon mot de passe</Link>
+          <button className="btn-ghost mt-2 !py-2.5" onClick={async () => { await sb.auth.signOut(); location.href = '/'; }}>Se déconnecter</button>
           <button className="btn-ghost mt-2 !py-2.5 text-[#C8323B] border-[#FFD3D6]" onClick={supprimer}>Supprimer mon compte et toutes mes données</button>
         </Panel>
       </div>

@@ -59,6 +59,7 @@ function Liste() {
         {data && !data.ok && <div className="card border border-[#FFD3D6]"><b className="text-[#C8323B]">Impossible de charger les annonces</b><div className="sub mt-1">{data.error}</div>{String(data.error ?? '').includes('profil') && <Link href="/onboarding" className="btn mt-3">Créer mon profil</Link>}</div>}
         {data?.ok && !data.verifie && <div className="card"><b className="text-navy">Compte à vérifier</b><div className="sub mt-1">Les annonces sont réservées aux agents vérifiés (carte pro ou mail pro).</div><Link href="/onboarding" className="btn mt-3">Vérifier mon compte</Link></div>}
 
+        {data?.ok && data.verifie && (data.exemples ?? 0) > 0 && <div className="bg-white border border-[#E6E9F0] rounded-2xl px-4 py-3 text-[12.5px] text-[#6F7789] mb-3">Les annonces marquées <b className="text-navy">Exemple</b> montrent le format en attendant les premières vraies. Elles disparaissent une à une à chaque nouvelle annonce déposée par un collègue vérifié.</div>}
         <div className="flex flex-col gap-3">
           {annonces.map(a => <AnnonceCard key={a.id} a={a} onPaywall={() => setPay(true)} onFavori={favori} onProposer={proposer} />)}
           {data?.ok && data.verifie && !data.premium && total > enClair && (

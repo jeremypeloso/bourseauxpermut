@@ -4,8 +4,9 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import Image from 'next/image';
 import { supabaseBrowser } from '@/lib/supabase-browser';
+import MotDePasse from '@/components/MotDePasse';
 
-type Etape = 0 | 1 | 2 | 3 | 4;
+type Etape = 0 | 1 | 2 | 3 | 4 | 5;
 const INSTITUTIONS = [
   { code: 'PN', t: 'Police nationale', s: 'CEA, CC, CCD · mouvements généraux et profilés · barème à points', c: 'from-[#4C86FF] to-[#1B4FD6]' },
   { code: 'GN', t: 'Gendarmerie nationale', s: 'Sous-officiers, GAV, officiers · plan annuel de mutation · logement en caserne', c: 'from-[#2F4A8A] to-[#0F1B33]' },
@@ -30,6 +31,7 @@ function OnboardingInner() {
   const [code, setCode] = useState('');
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const [mdpOk, setMdpOk] = useState(false);
   const file = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -37,9 +39,10 @@ function OnboardingInner() {
     (async () => {
       const sb = supabaseBrowser();
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) return r.replace('/login');
+      if (!user) return r.replace('/');
+      setMdpOk(!!user.user_metadata?.mdp);
       const { data } = await sb.from('profils').select('institution, verifie_carte, verifie_mail_pro').eq('id', user.id).maybeSingle();
-      if (data) { setInst(data.institution); if (data.verifie_carte || data.verifie_mail_pro) r.replace('/annonces'); }
+      if (data) { setInst(data.institution); if (data.verifie_carte || data.verifie_mail_pro) { if (user.user_metadata?.mdp) r.replace('/annonces'); else setEtape(5); } }
     })();
   }, [r]);
 
@@ -69,7 +72,7 @@ function OnboardingInner() {
     setBusy(false); if (res.ok) setEtape(4); else setMsg(res.message);
   };
 
-  const Dots = () => <div className="flex justify-center gap-1.5 my-3">{[0,1,2,3,4].map(i => <i key={i} className={`h-2 rounded-full ${i === etape ? 'w-5 bg-bleu' : 'w-2 bg-[#D5D9E2]'}`} />)}</div>;
+  const Dots = () => <div className="flex justify-center gap-1.5 my-3">{[0,1,2,3,4,5].map(i => <i key={i} className={`h-2 rounded-full ${i === etape ? 'w-5 bg-bleu' : 'w-2 bg-[#D5D9E2]'}`} />)}</div>;
 
   return (
     <main className="min-h-screen bg-paper flex items-start justify-center md:py-10"><div className="w-full md:max-w-[560px] md:bg-white md:rounded-[26px] md:shadow-[0_20px_60px_-30px_rgba(15,27,51,.35)] flex flex-col px-5 md:px-8 pt-[max(12px,env(safe-area-inset-top))] md:pt-6 pb-6 min-h-screen md:min-h-0">
@@ -140,7 +143,7 @@ function OnboardingInner() {
         {msg && <p className="text-[12.5px] text-navy mt-3">{msg}</p>}
         <button className="btn mt-3" onClick={confirmer} disabled={busy || code.replace(/\s/g, '').length !== 6}>Confirmer le code</button>
         <button className="btn-ghost mt-2" onClick={() => setEtape(2)}>Je préfère photographier ma carte pro</button>
-        <button className="btn-ghost mt-2" onClick={() => r.push('/deposer')}>Plus tard, je remplis mes souhaits</button>
+        <button className="btn-ghost mt-2" onClick={() => r.push('/annonces')}>Plus tard</button>
       </>)}
 
       {etape === 4 && (<>
@@ -155,7 +158,11 @@ function OnboardingInner() {
           <div className="kv"><span>Corps, grade, affectation</span><b>Pour le matching</b></div>
         </div>
         <div className="flex-1" />
-        <button className="btn-dark mt-4" onClick={() => r.push('/deposer')}>Renseigner mes souhaits</button>
+        <button className="btn-dark mt-4" onClick={() => mdpOk ? r.push('/deposer') : setEtape(5)}>{mdpOk ? 'Déposer mon annonce' : 'Choisir mon mot de passe'}</button>
+      </>)}
+
+      {etape === 5 && (<>
+        <MotDePasse onDone={() => r.push('/deposer')} />
       </>)}
     </div></main>
   );

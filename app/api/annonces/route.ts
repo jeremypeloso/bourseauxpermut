@@ -4,6 +4,7 @@ import { clair, contexte, entete, estBoost } from '@/lib/annonces';
 
 export const runtime = 'nodejs';
 const CLAIR_GRATUIT = 3;
+const MAX_EXEMPLES = 12; // les annonces d'exemple s'effacent une par une à mesure que les vraies arrivent
 /** GET ?inst=PN&departement=06&vers=moi&depuis=cible&om=1&boost=1&q=nice */
 export async function GET(req: NextRequest) {
   const user = await currentUser();
@@ -24,9 +25,12 @@ export async function GET(req: NextRequest) {
   if (p.get('boost')) liste = liste.filter(estBoost);
   if (q) liste = liste.filter(a => [a.services?.ville, a.services?.departement, a.type_service, a.grade, ...(a.cibles ?? []).map((c: any) => `${c.ville} ${c.departement}`)].join(' ').toLowerCase().includes(q));
 
-  liste.sort((a, b) => (Number(estBoost(b)) - Number(estBoost(a))) || (score(b) - score(a)) || (b.created_at > a.created_at ? 1 : -1));
+  // Exemples : au plus MAX_EXEMPLES moins le nombre de vraies annonces actives, et jamais mis en avant
+  const vraies = liste.filter(a => !a.demo); const exemples = liste.filter(a => a.demo).slice(0, Math.max(0, MAX_EXEMPLES - vraies.length));
+  liste = [...vraies, ...exemples];
+  liste.sort((a, b) => (Number(!a.demo) - Number(!b.demo)) * -1 || (Number(estBoost(b)) - Number(estBoost(a))) || (score(b) - score(a)) || (b.created_at > a.created_at ? 1 : -1));
   const out = liste.map((a, i) => { const mienne = a.profil_id === user.id; return premium || mienne || i < CLAIR_GRATUIT ? clair(a, mienne, score(a)) : entete(a); });
-  return NextResponse.json({ ok: true, verifie: true, premium, annonces: out, total: liste.length, en_clair: premium ? liste.length : Math.min(CLAIR_GRATUIT, liste.length) });
+  return NextResponse.json({ ok: true, verifie: true, premium, annonces: out, total: liste.length, exemples: liste.filter(a => a.demo).length, en_clair: premium ? liste.length : Math.min(CLAIR_GRATUIT, liste.length) });
 }
 
 /** POST { visibilite?: 'simple'|'boost' } → publie ou met à jour mon annonce depuis mon profil. */

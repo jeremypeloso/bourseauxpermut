@@ -53,6 +53,8 @@ export default function Detail() {
           <b className="text-[18px] text-navy tracking-tight">{a.mienne ? 'Votre annonce' : 'Proposer une permutation'}</b>
           {a.mienne ? (
             <><div className="sub mt-1">Visible par les agents vérifiés de votre institution.</div><Link href="/deposer" className="btn mt-3">Modifier ou mettre en avant</Link></>
+          ) : a.demo ? (
+            <><div className="sub mt-1">Annonce d&apos;exemple : elle montre le format en attendant les premières vraies annonces. Déposez la vôtre, le matching fera le reste.</div><Link href="/deposer" className="btn mt-3">Déposer mon annonce</Link></>
           ) : (
             <><div className="sub mt-1">Une proposition ouvre une mise en relation. L&apos;identité est révélée quand les deux ont accepté.</div><button className="btn mt-3" onClick={proposer}>Proposer une permutation</button><button className="btn-ghost mt-2" onClick={favori}>{fav ? '♥ Sauvegardée' : '♡ Sauvegarder'}</button></>
           )}
