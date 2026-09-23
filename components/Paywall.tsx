@@ -18,7 +18,7 @@ export default function Paywall({ open, onClose }: { open: boolean; onClose: () 
         <div className="rounded-3xl p-5 text-white bg-gradient-to-br from-navy2 to-navy">
           <div className="flex justify-between items-center"><span className="pill bg-[#22B573]/25 text-[#8FF0C0]">Premium</span><span className="text-[34px] font-extrabold tracking-tight">9,99 €<small className="text-[13px] text-[#A9B7D6] font-semibold"> / mois</small></span></div>
           <ul className="mt-3 text-[13.5px] text-[#DCE4F5] space-y-1.5">
-            {['Matching à 2, 3 et 4 agents, en continu', 'Alertes immédiates, au lieu de 48 h de retard', 'Mise en relation illimitée', 'Simulateur de points et historique par ville', 'Courriers de permutation prêts à signer', '1 € par mois reversé à l\'écoute entre collègues'].map(t => <li key={t} className="flex gap-2"><span className="text-[#8FF0C0]">✓</span>{t}</li>)}
+            {['Toutes les annonces en clair, réponse illimitée', 'Votre annonce mise en avant en permanence', 'Alertes immédiates, au lieu de 48 h de retard', 'Mise en relation illimitée', 'Simulateur de points, courriers prêts à signer', '1 € par mois reversé à l\'écoute entre collègues'].map(t => <li key={t} className="flex gap-2"><span className="text-[#8FF0C0]">✓</span>{t}</li>)}
           </ul>
           <button className="btn mt-4" onClick={go} disabled={busy}>{busy ? 'Redirection…' : 'Passer en Premium'}</button>
           <p className="text-center text-[11px] text-[#A9B7D6] mt-2">Sans engagement, sans période d&apos;essai. Résiliable en un geste dès votre mutation obtenue.</p>

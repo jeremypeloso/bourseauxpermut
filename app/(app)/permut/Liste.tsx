@@ -17,6 +17,10 @@ export default function ListeCorrespondances({ corrs, premium }: { corrs: any[];
   const visibles = corrs.filter(c => filtre === 'all' || (filtre === 'directe' ? c.type === 'directe' : c.type !== 'directe'));
   return (
     <>
+      <div className="flex gap-1.5 mb-3 bg-white rounded-2xl p-1">
+        <span className="flex-1 text-center py-2 rounded-xl text-[13px] font-bold bg-navy text-white">Correspondances</span>
+        <Link href="/annonces" className="flex-1 text-center py-2 rounded-xl text-[13px] font-bold text-[#6F7789]">Annonces</Link>
+      </div>
       <div className="flex justify-between items-center mb-3"><h1 className="h1">Correspondances</h1><span className="sub">{corrs.length}</span></div>
       <div className="flex gap-1.5 mb-3">
         {(['all', 'directe', 'cycle'] as const).map(f => <button key={f} onClick={() => setFiltre(f)} className={`rounded-full px-3.5 py-2 text-[13px] font-semibold ${filtre === f ? 'bg-navy text-white' : 'bg-white text-[#6F7789]'}`}>{f === 'all' ? 'Toutes' : f === 'directe' ? 'Directes' : 'Cycles'}</button>)}

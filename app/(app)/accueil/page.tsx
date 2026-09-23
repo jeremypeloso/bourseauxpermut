@@ -49,7 +49,8 @@ export default async function Accueil() {
         <Link href="/ecoute" className="flex-1 rounded-2xl px-3 py-3.5 text-white font-bold bg-gradient-to-br from-[#3ED18B] to-[#149A5E] shadow-lg leading-tight">Parler<small className="block text-[10.5px] font-semibold opacity-85">{refs?.length ?? 0} collègue{(refs?.length ?? 0) > 1 ? 's' : ''} dispo</small></Link>
         <Link href="/apres" className="flex-1 rounded-2xl px-3 py-3.5 text-white font-bold bg-gradient-to-br from-[#A66BFF] to-[#6C3BC9] shadow-lg leading-tight">L&apos;après<small className="block text-[10.5px] font-semibold opacity-85">Préparer sans le dire</small></Link>
       </div>
-      <Link href="/points" className="flex justify-between items-center mt-3 bg-white rounded-2xl px-3.5 py-3 text-[12.5px] text-[#6F7789]"><span>Mes points de mutation</span><b className="text-navy">Simuler ›</b></Link>
+      <Link href="/annonces" className="flex justify-between items-center mt-3 bg-white rounded-2xl px-3.5 py-3 text-[12.5px] text-[#6F7789]"><span>Annonces de permutation</span><b className="text-navy">Parcourir ›</b></Link>
+      <Link href="/points" className="flex justify-between items-center mt-2 bg-white rounded-2xl px-3.5 py-3 text-[12.5px] text-[#6F7789]"><span>Mes points de mutation</span><b className="text-navy">Simuler ›</b></Link>
       {(cal ?? []).map(c => <div key={c.libelle} className="flex justify-between items-center mt-2 bg-white rounded-2xl px-3.5 py-3 text-[12.5px] text-[#6F7789]"><span>{c.libelle}</span><b className="text-navy">Clôture le {new Date(c.cloture).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' })}</b></div>)}
     </>
   );
