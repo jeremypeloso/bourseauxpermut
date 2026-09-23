@@ -62,7 +62,7 @@ export default function AuthModal({ open, initial, onClose }: { open: boolean; i
               ))}
             </div>
             {voie === 2 && <input className="field mt-3" type="email" placeholder="prenom.nom@interieur.gouv.fr (adresse pro nominative)" value={pro} onChange={e => setPro(e.target.value)} />}
-            <p className="sub mt-3">Vous recevrez un lien de confirmation. Une fois vérifié, vous choisirez votre mot de passe.</p>
+            <p className="sub mt-3">Vous recevrez un lien de confirmation. Une fois vérifié, vous choisirez votre mot de passe. En créant un compte, vous acceptez les <a href="/legal/cgv" target="_blank" className="text-bleu font-semibold">conditions générales</a> et la <a href="/legal/confidentialite" target="_blank" className="text-bleu font-semibold">politique de confidentialité</a>.</p>
             {err && <p className="text-coral text-[12.5px] mt-2">{err}</p>}
             <button className="btn mt-3" onClick={inscrire} disabled={busy || !email.includes('@') || (voie === 2 && !pro.includes('@'))}>{busy ? 'Envoi…' : 'Recevoir mon lien de confirmation'}</button>
             <p className="sub text-center mt-3">Déjà un compte ? <button className="text-bleu font-semibold" onClick={() => setMode('login')}>Connexion</button></p>

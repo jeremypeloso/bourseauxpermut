@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC = ['/', '/login', '/auth', '/api/stripe/webhook', '/api/cron', '/api/preinscription'];
+const PUBLIC = ['/', '/login', '/auth', '/legal', '/api/stripe/webhook', '/api/cron', '/api/preinscription'];
 const PRELAUNCH = process.env.NEXT_PUBLIC_PRELAUNCH === '1';
 
 export async function middleware(req: NextRequest) {
