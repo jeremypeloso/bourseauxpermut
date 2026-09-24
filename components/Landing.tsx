@@ -6,6 +6,7 @@ import CompteurLive from './CompteurLive';
 import Vignette from './Vignette';
 import Preinscription from './Preinscription';
 import Compteur from './Compteur';
+import BarreChiffres from './BarreChiffres';
 
 const PRELAUNCH = process.env.NEXT_PUBLIC_PRELAUNCH === '1';
 const OUVERTURE = process.env.NEXT_PUBLIC_OUVERTURE || '2026-10-23T08:00:00+02:00';
@@ -67,9 +68,7 @@ export default function Landing() {
           <div className="text-[12.5px] text-white/50 mt-5">Inscription gratuite avec votre email perso · Vérification carte pro ou mail pro · Premium 9,99 €/mois, sans engagement</div>{OFFRE_LANCEMENT && <div className="mt-4 inline-flex items-center gap-2.5 bg-[#22B573]/20 border border-[#22B573]/40 rounded-2xl px-4 py-2.5 text-[13.5px] text-white"><span className="w-2 h-2 rounded-full bg-[#8FF0C0]" /><b>Lancement :</b> 1 mois de Premium offert aux 100 premiers comptes vérifiés, sans carte bancaire.</div>}</>)}
         </div></W>
       </section>
-      <div className="bg-navy text-white"><W cls="grid grid-cols-2 md:grid-cols-4 gap-y-3 py-5">
-        {[PRELAUNCH ? [new Date(OUVERTURE).toLocaleDateString('fr-FR', { day: 'numeric', month: 'short' }), 'ouverture, à 8 h'] : [<CompteurLive key="c" cle="en_recherche" initial={0} />, 'collègues en recherche en ce moment'], [<CompteurLive key="a" cle="annonces_actives" initial={0} />, 'annonces actives'], [<CompteurLive key="f" cle="cycles_fermes" initial={0} />, 'permutations abouties'], OFFRE_LANCEMENT ? [<span key="o"><CompteurLive cle="premium_offerts" initial={0} /><span className="text-[18px]"> / 100</span></span>, 'places Premium offertes déjà prises'] : ['0', "nom visible avant l'accord de tous"]].map(([n, t], i) => <div key={i} className="md:border-l md:border-white/10 md:pl-5 first:border-0 first:pl-0"><b className="block text-[30px] font-extrabold tracking-[-1px] text-[#8FF0C0] leading-none">{n}</b><span className="text-[12.5px] text-[#A9B7D6]">{t}</span></div>)}
-      </W></div>
+      <BarreChiffres prelaunch={PRELAUNCH} offre={OFFRE_LANCEMENT} ouverture={OUVERTURE} />
 
       {/* DÉFIS */}
       <section id="defis" className="py-20"><W>
