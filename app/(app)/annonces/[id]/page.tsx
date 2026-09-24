@@ -48,7 +48,7 @@ export default function Detail() {
         </div>
         {d.similaires?.length > 0 && <><h2 className="text-[17px] font-extrabold text-navy mt-6 mb-3">Annonces similaires</h2><div className="flex flex-col gap-3">{d.similaires.map((s: any) => <AnnonceCard key={s.id} a={s} onPaywall={() => setPay(true)} />)}</div></>}
       </div>
-      <aside className="lg:sticky lg:top-[130px] flex flex-col gap-3.5">
+      <aside className="lg:sticky lg:top-[84px] flex flex-col gap-3.5">
         <div className="bg-white border border-[#E6E9F0] rounded-2xl p-4">
           <b className="text-[18px] text-navy tracking-tight">{a.mienne ? 'Votre annonce' : 'Proposer une permutation'}</b>
           {a.mienne ? (

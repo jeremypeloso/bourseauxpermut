@@ -45,7 +45,7 @@ function Liste() {
 
   return (
     <div className="grid lg:grid-cols-[280px_1fr] gap-6">
-      <aside className={`lg:sticky lg:top-[130px] lg:self-start flex-col gap-3.5 ${filtres ? 'flex' : 'hidden lg:flex'}`}>
+      <aside className={`lg:sticky lg:top-[84px] lg:self-start flex-col gap-3.5 ${filtres ? 'flex' : 'hidden lg:flex'}`}>
         <Link href="/matchs" className="block rounded-2xl p-4 text-white bg-gradient-to-br from-navy2 to-navy"><b className="block text-[14px]">Matching intelligent</b><span className="text-[12px] text-[#A9B7D6]">Vos souhaits sont recroisés toutes les heures avec ceux des autres agents.</span><span className="block text-[13px] font-bold mt-3 bg-white text-navy rounded-xl px-3 py-2.5 text-center">Voir mes matchs</span></Link>
         <Filtres onChange={setParam} />
       </aside>

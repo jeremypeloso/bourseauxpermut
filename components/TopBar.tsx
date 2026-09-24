@@ -19,7 +19,6 @@ export default function TopBar({ nbMatchs, institution, admin = false }: { nbMat
       {!!badge && <i className="absolute top-0 right-1 w-4 h-4 rounded-full bg-coral text-white text-[10px] font-extrabold not-italic flex items-center justify-center">{badge}</i>}<Ico d={d} />{t}
     </Link>
   );
-  const chips = [['/annonces', 'Toutes'], ['/annonces?inst=PN', 'Police nationale'], ['/annonces?inst=GN', 'Gendarmerie'], ['/annonces?inst=AP', 'Pénitentiaire'], ['/annonces?vers=moi', 'Vers mon département'], ['/annonces?depuis=cible', 'Depuis ma ville cible'], ['/annonces?om=1', 'Outre-mer · CIMM'], ['/annonces?boost=1', 'Mises en avant']];
   return (
     <>
       <header className="sticky top-0 z-30 bg-white border-b border-[#E6E9F0]">
@@ -34,9 +33,7 @@ export default function TopBar({ nbMatchs, institution, admin = false }: { nbMat
             <NavA h="/annonces" t="Annonces" d={I.ann} /><NavA h="/matchs" t="Mes matchs" d={I.match} badge={nbMatchs} /><NavA h="/favoris" t="Favoris" d={I.fav} /><NavA h="/compte" t="Compte" d={I.user} />{admin && <NavA h="/admin" t="Admin" d={'M4 4h16v16H4zM8 12h8M12 8v8'} />}
           </nav>
         </div>
-        <div className="border-t border-[#E6E9F0] bg-white"><div className="max-w-[1200px] mx-auto px-4 md:px-5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] py-2.5">
-          {chips.filter(([h]) => !h.includes('inst=') || (estOuverte(h.split('inst=')[1]) && (!institution || h.endsWith(institution)))).map(([h, t]) => <Link key={h} href={h} className={`shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold border ${h === '/annonces' && path === '/annonces' ? 'bg-navy text-white border-navy' : 'bg-white text-[#3B4457] border-[#E6E9F0]'}`}>{t}</Link>)}
-        </div></div>
+
       </header>
       <nav className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-white border-t border-[#E6E9F0] flex justify-around px-1.5 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]">
         {[['/annonces', 'Annonces', I.ann], ['/matchs', 'Matchs', I.match], ['/deposer', 'Déposer', I.plus], ['/favoris', 'Favoris', I.fav], ['/compte', 'Compte', I.user]].map(([h, t, d]) => <Link key={h} href={h} className={`flex flex-col items-center gap-0.5 w-16 text-[10.5px] font-semibold ${on(h) ? 'text-bleu' : 'text-[#A3AAB8]'}`}><Ico d={d} />{t}</Link>)}

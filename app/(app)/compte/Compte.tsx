@@ -54,7 +54,7 @@ export default function Compte({ email, profil, gradeLibelle, souhaits, annonce,
       </div>
 
       <div className="grid lg:grid-cols-[220px_1fr] gap-5 items-start">
-        <nav className="hidden lg:block sticky top-[130px] bg-white border border-[#E6E9F0] rounded-2xl p-2">
+        <nav className="hidden lg:block sticky top-[84px] bg-white border border-[#E6E9F0] rounded-2xl p-2">
           {NAV.map(([h, t, d]) => <a key={h} href={h} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13.5px] font-semibold text-[#3B4457] hover:bg-paper"><Ico d={d} cls="w-[18px] h-[18px] text-[#6F7789]" />{t}</a>)}
         </nav>
 
