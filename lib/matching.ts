@@ -68,19 +68,21 @@ export function trouverCycles(arcs: Map<string, Edge[]>, agents: Map<string, Age
 export function scorer(c: { ids: string[]; rangs: number[] }, agents: Map<string, Agent>) {
   const membres = c.ids.map(id => agents.get(id)!);
   let score = 100;
-  const detail: Record<string, string> = {};
+  const detail: Record<string, string> = {}; const bareme: string[] = [];
   // Souhaits : -8 par rang au-delà du 1er
-  const penalRang = c.rangs.reduce((s, r) => s + (r - 1) * 8, 0); score -= penalRang;
+  const penalRang = c.rangs.reduce((s, r) => s + (r - 1) * 8, 0); score -= penalRang; if (penalRang) bareme.push(`−${penalRang} souhaits au-delà du n°1`);
   detail.souhaits = c.rangs.every(r => r === 1) ? `${c.ids.length} souhaits n°1` : `${c.rangs.filter(r => r === 1).length}/${c.ids.length} en n°1`;
   // Type de service : -12 si différents
   const types = new Set(membres.map(m => m.type_service ?? '?'));
-  if (types.size > 1) { score -= 12; detail.service = [...types].join(' ↔ '); } else detail.service = [...types].join('');
+  if (types.size > 1) { score -= 12; detail.service = [...types].join(' ↔ '); bareme.push('−12 types de service différents'); } else detail.service = [...types].join('');
   // Fenêtre de départ : -10 si écart > 6 mois entre les dates
   const dates = membres.map(m => m.depart_des ? new Date(m.depart_des).getTime() : null).filter(Boolean) as number[];
-  if (dates.length > 1 && (Math.max(...dates) - Math.min(...dates)) > 1000 * 3600 * 24 * 183) { score -= 10; detail.depart = 'fenêtres de départ éloignées'; }
-  // Ancienneté poste < 24 mois : -6 par agent
-  membres.forEach(m => { if (m.anciennete_poste_mois < 24) score -= 6; });
+  if (dates.length > 1 && (Math.max(...dates) - Math.min(...dates)) > 1000 * 3600 * 24 * 183) { score -= 10; detail.depart = 'fenêtres de départ éloignées'; bareme.push('−10 dates de départ éloignées'); }
+  // Ancienneté poste renseignée et < 24 mois : -6 par agent (une ancienneté inconnue n'est pas pénalisée)
+  const jeunes = membres.filter(m => m.anciennete_poste_mois > 0 && m.anciennete_poste_mois < 24).length;
+  if (jeunes) { score -= 6 * jeunes; bareme.push(`−${6 * jeunes} ancienneté < 2 ans (${jeunes} agent${jeunes > 1 ? 's' : ''})`); }
   // Longueur : -4 par maillon au-delà de 2
-  score -= (c.ids.length - 2) * 4;
+  if (c.ids.length > 2) { score -= (c.ids.length - 2) * 4; bareme.push(`−${(c.ids.length - 2) * 4} cycle à ${c.ids.length}`); }
+  detail.bareme = bareme.length ? bareme.join(' · ') : 'aucune pénalité';
   return { score: Math.max(0, Math.min(100, score)), detail };
 }

@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 
 type Mode = 'signup' | 'login' | 'oubli';
@@ -16,6 +16,7 @@ export default function AuthModal({ open, initial, onClose, notice }: { open: bo
   const [envoye, setEnvoye] = useState(false);
   const [err, setErr] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  useEffect(() => { if (open) { setMode(initial); setEnvoye(false); setErr(null); } }, [open, initial]);
   if (!open) return null;
   const sb = supabaseBrowser();
 

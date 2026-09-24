@@ -40,6 +40,6 @@ export async function mailAVousDeRepondre(to: string) {
   await resend().emails.send({ from: process.env.EMAIL_FROM!, to, subject: 'Un agent a accepté, à vous de répondre', html: gabarit('Un agent a accepté', 'Un agent de votre correspondance vient d\'accepter la mise en relation. Elle ne se fera que si tous acceptent : connectez-vous pour donner votre réponse.', 'Répondre', `${SITE()}/matchs`) });
 }
 /** Un agent a refusé : la correspondance est fermée. */
-export async function mailCycleFerme(to: string) {
-  await resend().emails.send({ from: process.env.EMAIL_FROM!, to, subject: 'Une correspondance s\'est refermée', html: gabarit('Une correspondance s\'est refermée', 'Un des agents a décliné. Cette correspondance est close, sans suite pour vous. Le rapprochement continue toutes les heures avec vos souhaits.', 'Voir mes matchs', `${SITE()}/matchs`) });
+export async function mailCycleFerme(to: string, raison?: string) {
+  await resend().emails.send({ from: process.env.EMAIL_FROM!, to, subject: 'Une correspondance s\'est refermée', html: gabarit('Une correspondance s\'est refermée', `Un des agents a décliné${raison ? ` (${raison})` : ''}. Cette correspondance est close, sans suite pour vous. Le rapprochement continue toutes les heures avec vos souhaits.`, 'Voir mes matchs', `${SITE()}/matchs`) });
 }

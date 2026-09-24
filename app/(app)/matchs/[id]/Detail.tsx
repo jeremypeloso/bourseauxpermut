@@ -8,13 +8,14 @@ import { Anneau } from '../Liste';
 export default function Detail({ id, rows, premium }: { id: string; rows: any[]; premium: boolean }) {
   const r = useRouter();
   const [pay, setPay] = useState(false); const [agents, setAgents] = useState<any[] | null>(null); const [msg, setMsg] = useState<string | null>(null);
+  const [decl, setDecl] = useState(false); const [raison, setRaison] = useState('service');
   const c = rows[0]; const moi = rows.find(x => x.est_moi); const tous = rows.every(x => x.reponse === 'accepte');
   const act = async (action: string) => {
-    const res = await fetch('/api/correspondances', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action }) });
+    const res = await fetch('/api/correspondances', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action, raison }) });
     if (res.status === 402) return setPay(true);
     const j = await res.json();
     if (action === 'reveler') return setAgents(j.agents ?? []);
-    if (action === 'ignorer') return r.push('/matchs');
+    if (action === 'ignorer' || action === 'decliner') return r.push('/matchs');
     setMsg(j.statut === 'confirmee' ? 'Tous les agents ont accepté.' : 'Réponse enregistrée. Les autres agents sont prévenus par mail ; vous recevrez un mail dès qu\'ils auront répondu.');
     setTimeout(() => location.reload(), 900);
   };
@@ -31,13 +32,15 @@ export default function Detail({ id, rows, premium }: { id: string; rows: any[];
               <span className={`pill ${m.reponse === 'accepte' ? 'bg-[#DFF7EB] text-[#16804F]' : m.reponse === 'refuse' ? 'bg-[#FFE6E8] text-[#C8323B]' : 'bg-paper text-[#6F7789]'}`}>{m.reponse === 'accepte' ? 'Accepté' : m.reponse === 'refuse' ? 'Refusé' : m.est_moi ? 'À vous de répondre' : 'En attente'}</span>
             </div>))}</div>
           {agents && <div className="mt-4 rounded-2xl p-4 bg-gradient-to-b from-[#DFF7EB] to-white border border-[#CDEFDC]"><b className="text-[#16804F]">Cycle confirmé, identités visibles</b>{agents.map(a => <div key={a.position} className="py-3 border-t border-[#CDEFDC] first:border-t-0"><b className="block text-[15px] text-navy">Agent {a.position} · {a.prenom} {a.nom}</b><div className="flex flex-wrap gap-2 mt-1.5 text-[13.5px]">{a.telephone && <a href={`tel:${a.telephone}`} className="bg-white border border-[#CDEFDC] rounded-xl px-3 py-1.5 font-semibold text-navy">📞 {a.telephone.replace(/(\d{2})(?=\d)/g, '$1 ')}</a>}{a.email && <a href={`mailto:${a.email}`} className="bg-white border border-[#CDEFDC] rounded-xl px-3 py-1.5 font-semibold text-navy">✉️ {a.email}</a>}{!a.telephone && !a.email && <span className="text-[#6F7789]">Contact non renseigné par cet agent.</span>}</div></div>)}
-              <p className="text-[12px] text-[#3B4457] mt-3">Contactez-vous, mettez-vous d&apos;accord, puis chacun dépose sa demande de mutation en mentionnant l&apos;autre. La permutation n&apos;est pas un droit : l&apos;administration décide.</p></div>}
+              <p className="text-[12px] text-[#3B4457] mt-3">Contactez-vous, mettez-vous d&apos;accord, puis chacun dépose sa demande de mutation en mentionnant l&apos;autre. La permutation n&apos;est pas un droit : l&apos;administration décide.</p>
+              <Link href={`/matchs/${id}/courrier`} className="btn mt-3">Préparer mon courrier de demande de mutation</Link></div>}
         </div>
       </div>
       <aside className="flex flex-col gap-3.5">
         <div className="bg-white border border-[#E6E9F0] rounded-2xl p-4">
           <b className="text-[14px] text-navy">Compatibilité</b>
-          {Object.entries(c.detail ?? {}).map(([k, v]) => <div key={k} className="kv"><span className="capitalize">{k}</span><b>{String(v)}</b></div>)}
+          {Object.entries(c.detail ?? {}).filter(([k]) => k !== 'bareme' && k !== 'source').map(([k, v]) => <div key={k} className="kv"><span className="capitalize">{k}</span><b>{String(v)}</b></div>)}
+            {c.detail?.bareme && <p className="text-[12px] text-[#6F7789] mt-2">Base 100 · {c.detail.bareme}</p>}
           <div className="mt-3">
             {agents ? null : tous ? <button className="btn bg-mint" onClick={() => act('reveler')}>Voir les identités</button>
               : moi?.reponse === 'attente' ? <><p className="text-[12.5px] text-[#6F7789] mb-2">Accepter ne vous engage pas : les identités ne seront révélées que si tous acceptent.</p><button className="btn" onClick={() => act('accepter')}>J&apos;accepte la mise en relation</button><button className="btn-ghost mt-2" onClick={() => act('ignorer')}>Non merci, ignorer</button></>
@@ -45,6 +48,20 @@ export default function Detail({ id, rows, premium }: { id: string; rows: any[];
             {msg && <p className="sub mt-2">{msg}</p>}
           </div>
         </div>
+        {c.statut !== 'refusee' && (
+          <div className="bg-white border border-[#E6E9F0] rounded-2xl p-4">
+            {!decl ? <button className="text-[13px] font-semibold text-[#C8323B]" onClick={() => setDecl(true)}>Décliner cette correspondance</button> : (
+              <>
+                <b className="text-[13px] text-navy">Pourquoi déclinez-vous ?</b>
+                <select className="field !py-2.5 mt-2" value={raison} onChange={e => setRaison(e.target.value)}>
+                  <option value="service">Le type de service ne me convient pas</option><option value="ville">La ville ne me convient plus</option><option value="date">Les dates de départ ne collent pas</option><option value="perso">Raison personnelle</option><option value="autre">Je préfère ne pas préciser</option>
+                </select>
+                <p className="text-[12px] text-[#6F7789] mt-2">La correspondance sera fermée pour tous ; les autres agents recevront la raison, sans votre identité.</p>
+                <div className="flex gap-2 mt-3"><button className="btn !py-2.5 bg-[#C8323B]" onClick={() => act('decliner')}>Confirmer</button><button className="btn-ghost !py-2.5" onClick={() => setDecl(false)}>Annuler</button></div>
+              </>
+            )}
+          </div>
+        )}
         <div className="bg-[#FFF3D6]/60 rounded-2xl px-4 py-3 text-[12.5px] text-[#3B4457] border-l-[3px] border-amber"><b className="text-[#9A6A00]">Rappel.</b> La permutation n&apos;est pas un droit. Chaque agent dépose ensuite une demande de mutation classique en mentionnant les autres. L&apos;app prépare les courriers.</div>
       </aside>
       <Paywall open={pay} onClose={() => setPay(false)} />
