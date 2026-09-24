@@ -5,9 +5,10 @@ import { Suspense } from 'react';
 import Image from 'next/image';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 import MotDePasse from '@/components/MotDePasse';
+import ContactForm from '@/components/ContactForm';
 import { estOuverte } from '@/lib/institutions';
 
-type Etape = 0 | 1 | 2 | 3 | 4 | 5;
+type Etape = 0 | 1 | 2 | 3 | 4 | 5 | 6;
 const INSTITUTIONS = [
   { code: 'PN', t: 'Police nationale', s: 'CEA, CC, CCD · mouvements généraux et profilés · barème à points', c: 'from-[#4C86FF] to-[#1B4FD6]' },
   { code: 'GN', t: 'Gendarmerie nationale', s: 'Sous-officiers, GAV, officiers · plan annuel de mutation · logement en caserne', c: 'from-[#2F4A8A] to-[#0F1B33]' },
@@ -85,7 +86,7 @@ function OnboardingInner() {
     setBusy(false); if (res.ok) setEtape(4); else setMsg(res.message);
   };
 
-  const Dots = () => <div className="flex justify-center gap-1.5 my-3">{[0,1,2,3,4,5].map(i => <i key={i} className={`h-2 rounded-full ${i === etape ? 'w-5 bg-bleu' : 'w-2 bg-[#D5D9E2]'}`} />)}</div>;
+  const Dots = () => <div className="flex justify-center gap-1.5 my-3">{[0,1,2,3,4,5,6].map(i => <i key={i} className={`h-2 rounded-full ${i === etape ? 'w-5 bg-bleu' : 'w-2 bg-[#D5D9E2]'}`} />)}</div>;
 
   return (
     <main className="min-h-screen bg-paper flex items-start justify-center md:py-10"><div className="w-full md:max-w-[560px] md:bg-white md:rounded-[26px] md:shadow-[0_20px_60px_-30px_rgba(15,27,51,.35)] flex flex-col px-5 md:px-8 pt-[max(12px,env(safe-area-inset-top))] md:pt-6 pb-6 min-h-screen md:min-h-0">
@@ -186,7 +187,11 @@ function OnboardingInner() {
           <div className="kv"><span>Corps, grade, affectation</span><b>Pour le matching</b></div>
         </div>
         <div className="flex-1" />
-        <button className="btn-dark mt-4" onClick={() => mdpOk ? r.push('/deposer') : setEtape(5)}>{mdpOk ? 'Déposer mon annonce' : 'Choisir mon mot de passe'}</button>
+        <button className="btn-dark mt-4" onClick={() => setEtape(6)}>Continuer</button>
+      </>)}
+
+      {etape === 6 && (<>
+        <ContactForm titre="Comment vous joindre après un accord" bouton={mdpOk ? 'Enregistrer et déposer mon annonce' : 'Enregistrer et choisir mon mot de passe'} onDone={() => mdpOk ? r.push('/deposer') : setEtape(5)} />
       </>)}
 
       {etape === 5 && (<>

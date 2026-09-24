@@ -46,13 +46,14 @@ export async function POST(req: NextRequest) {
     if (!membres.every(m => m.reponse === 'accepte')) return NextResponse.json({ error: 'cycle non confirmé' }, { status: 409 });
     await admin.from('journal_identites').insert({ profil_id: user.id, par_fonction: 'reveler_identites', correspondance_id: id });
     const autres = membres.filter(m => m.profil_id !== user.id);
-    const { data: idents } = await admin.from('identites').select('profil_id, nom_enc, prenom_enc, telephone_enc, mail_pro_enc').in('profil_id', autres.map(a => a.profil_id));
+    const { data: idents } = await admin.from('identites').select('profil_id, nom_enc, prenom_enc, telephone_enc, contact_email_enc, mail_pro_enc').in('profil_id', autres.map(a => a.profil_id));
     return NextResponse.json({
       ok: true,
       agents: (idents ?? []).map(i => ({
         position: autres.find(a => a.profil_id === i.profil_id)!.position,
-        prenom: decrypt(i.prenom_enc), nom: decrypt(i.nom_enc).slice(0, 1) + '.',
-        telephone: i.telephone_enc ? decrypt(i.telephone_enc) : null, mail_pro: decrypt(i.mail_pro_enc),
+        prenom: i.prenom_enc ? decrypt(i.prenom_enc) : '', nom: i.nom_enc ? decrypt(i.nom_enc) : '',
+        telephone: i.telephone_enc ? decrypt(i.telephone_enc) : null,
+        email: i.contact_email_enc ? decrypt(i.contact_email_enc) : (i.mail_pro_enc ? decrypt(i.mail_pro_enc) : null),
       })),
     });
   }

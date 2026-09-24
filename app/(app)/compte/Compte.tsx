@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 import Paywall from '@/components/Paywall';
 import { LIBELLES } from '@/lib/institutions';
+import ContactForm from '@/components/ContactForm';
 
 const Ico = ({ d, cls = 'w-5 h-5' }: { d: string; cls?: string }) => <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>;
 const I = { list: 'M4 5h16v14H4zM8 9h8M8 13h5', shield: 'M12 3l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V6zM9 12l2 2 4-4', star: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z', user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0', lock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4', trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13', check: 'M5 12l4 4L19 6', x: 'M6 6l12 12M18 6L6 18' };
@@ -16,7 +17,7 @@ export default function Compte({ email, profil, gradeLibelle, souhaits, annonce,
   const svc = profil?.services; const initiales = (profil?.grade ?? profil?.institution ?? '?').slice(0, 3);
   const retirer = async () => { if (!confirm('Retirer votre annonce ? Vous pourrez la republier à tout moment.')) return; setBusy(true); await fetch('/api/annonces', { method: 'DELETE' }); location.reload(); };
   const supprimer = async () => { if (!confirm('Supprimer définitivement votre compte et toutes vos données ? Cette action est immédiate et irréversible.')) return; await fetch('/api/compte', { method: 'DELETE' }); await sb.auth.signOut(); location.href = '/'; };
-  const NAV = [['#annonce', 'Mon annonce', I.list], ['#verification', 'Vérification', I.shield], ['#abonnement', 'Abonnement', I.star], ['#profil', 'Poste et souhaits', I.user], ['#securite', 'Sécurité', I.lock], ['#donnees', 'Mes données', I.trash]];
+  const NAV = [['#annonce', 'Mon annonce', I.list], ['#contact', 'Contact après accord', I.user], ['#verification', 'Vérification', I.shield], ['#abonnement', 'Abonnement', I.star], ['#profil', 'Poste et souhaits', I.user], ['#securite', 'Sécurité', I.lock], ['#donnees', 'Mes données', I.trash]];
   const Section = ({ id, t, d, children, action }: { id: string; t: string; d?: string; children: React.ReactNode; action?: React.ReactNode }) => (
     <section id={id} className="bg-white border border-[#E6E9F0] rounded-2xl p-5 md:p-6 scroll-mt-40">
       <div className="flex flex-wrap items-start justify-between gap-3 mb-4"><div><h2 className="text-[17px] font-extrabold text-navy">{t}</h2>{d && <p className="text-[13px] text-[#6F7789] mt-0.5">{d}</p>}</div>{action}</div>
@@ -74,6 +75,8 @@ export default function Compte({ email, profil, gradeLibelle, souhaits, annonce,
               </>
             ) : null}
           </Section>
+
+          <section id="contact" className="bg-white border border-[#E6E9F0] rounded-2xl p-5 md:p-6 scroll-mt-40"><ContactForm /></section>
 
           <Section id="verification" t="Vérification" d="Une seule vérification suffit. La seconde donne le badge « Vérifié deux fois », mieux placé dans les résultats.">
             <Ligne ok={!!profil?.verifie_carte} t="Carte professionnelle" s={profil?.verifie_carte ? 'Lue puis détruite dans la seconde. Il ne reste qu\'une empreinte du matricule.' : 'Photo du verso, analysée puis détruite. Le plus discret.'} action={!profil?.verifie_carte && <Link href="/onboarding" className="btn-ghost !w-auto !py-2 px-3.5 text-[13px]">Vérifier</Link>} />
