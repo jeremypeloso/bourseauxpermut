@@ -23,16 +23,28 @@ export async function POST(req: NextRequest) {
   const worker = await createWorker('fra');
   const { data } = await worker.recognize(buf);
   await worker.terminate();
-  const texte = data.text.toUpperCase();
+  // Normalisation : majuscules, accents retirés, O/I confondus par l'OCR remis en chiffres après un libellé numérique
+  const texte = data.text.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+  const num = (t?: string) => t?.replace(/[OQD]/g, '0').replace(/[IL|]/g, '1').replace(/[^0-9]/g, '');
+  const ligne = (label: RegExp) => texte.match(label)?.[1]?.replace(/[^A-Z' \-]/g, ' ').replace(/\s+/g, ' ').trim();
 
-  // Extraction très tolérante : à affiner avec de vraies cartes (PN, GN, AP n'ont pas le même gabarit)
-  const matricule = (texte.match(/(?:MATRICULE|N[°O]|NIGEND|IDENT)[^0-9]{0,12}([0-9]{5,9})/) ?? texte.match(/\b([0-9]{6,9})\b/))?.[1];
-  const nom = texte.match(/NOM\s*[:\-]?\s*([A-ZÀ-Ÿ' \-]{2,40})/)?.[1]?.trim();
-  const prenom = texte.match(/PR[ÉE]NOM\s*[:\-]?\s*([A-ZÀ-Ÿ' \-]{2,40})/)?.[1]?.trim();
-  const institution = /GENDARMERIE/.test(texte) ? 'GN' : /P[ÉE]NITENTIAIRE|JUSTICE/.test(texte) ? 'AP' : /POLICE/.test(texte) ? 'PN' : null;
+  // Verso de la carte (côté identité) : Nom / Prénoms / Matricule (8 ch., police) / Identifiant RIO (7 ch.) / NIGEND (gendarmerie)
+  const nom = ligne(/NOM\s*[:\-.]?\s*([A-Z' \-]{2,40})/);
+  const prenom = ligne(/PRENOM[S]?\s*[:\-.]?\s*([A-Z' \-]{2,40})/);
+  const matPolice = num(texte.match(/MATRICULE\s*[:\-.]?\s*([0-9OQDIL|]{6,10})/)?.[1]);
+  const rio = num(texte.match(/RIO\s*[:\-.]?\s*([0-9OQDIL|]{6,8})/)?.[1]);
+  const nigend = num(texte.match(/NIGEND\s*[:\-.]?\s*([0-9OQDIL|]{6,10})/)?.[1]);
+  const matAP = num(texte.match(/(?:MATRICULE|N[°O])\s*[:\-.]?\s*([0-9OQDIL|]{5,10})/)?.[1]);
+  const carteOfficielle = /MINIST[EÈ]RE DE L'?INT[EÉ]RIEUR|R[EÉ]PUBLIQUE FRAN[CÇ]AISE|GENDARMERIE|JUSTICE|P[EÉ]NITENTIAIRE/.test(texte);
 
-  if (!matricule || !nom || !prenom) {
-    return NextResponse.json({ ok: false, lecture: { matricule: !!matricule, nom: !!nom, prenom: !!prenom }, message: 'Lecture incomplète, reprenez la photo ou demandez une revue manuelle.' });
+  const institution = /GENDARMERIE|NIGEND/.test(texte) ? 'GN' : /PENITENTIAIRE|JUSTICE/.test(texte) ? 'AP' : /INTERIEUR|POLICE|RIO/.test(texte) ? 'PN' : null;
+  // Empreinte anti-doublon : matricule ; à défaut le RIO (police) ou le NIGEND (gendarmerie)
+  const matricule = (institution === 'GN' ? (nigend ?? matAP) : institution === 'AP' ? matAP : (matPolice ?? rio)) || undefined;
+
+  if (!carteOfficielle || !matricule || !nom || !prenom || matricule.length < 6) {
+    // OCR_DEBUG=1 (jamais en production) : renvoie le texte lu pour recaler les regex sur de vraies cartes. Rien n'est stocké.
+    const debug = process.env.OCR_DEBUG === '1' && process.env.NODE_ENV !== 'production' ? { texte_lu: data.text.slice(0, 1500), confiance: data.confidence } : {};
+    return NextResponse.json({ ok: false, lecture: { matricule: !!matricule, nom: !!nom, prenom: !!prenom }, message: 'Lecture incomplète, reprenez la photo ou demandez une revue manuelle.', ...debug });
   }
 
   const admin = supabaseAdmin();

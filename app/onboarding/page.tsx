@@ -58,7 +58,7 @@ function OnboardingInner() {
     const fd = new FormData(); fd.append('image', f);
     const res = await fetch('/api/verify/card', { method: 'POST', body: fd }).then(x => x.json());
     setBusy(false);
-    if (res.ok) setLecture(res); else setMsg(res.message ?? 'Lecture impossible');
+    if (res.ok) setLecture(res); else setMsg((res.message ?? 'Lecture impossible') + (res.texte_lu ? `\n\n[DEBUG OCR · confiance ${Math.round(res.confiance ?? 0)} %]\n${res.texte_lu}` : ''));
   };
 
   const envoyerMail = async () => {
@@ -111,11 +111,11 @@ function OnboardingInner() {
 
       {etape === 2 && (<>
         <h1 className="h1">Vérification<br /><span className="text-bleu">Votre carte pro</span></h1>
-        <p className="sub mt-2">Carte de police, carte militaire gendarmerie ou carte pénitentiaire. La photo est analysée puis détruite dans la seconde, elle n&apos;est jamais enregistrée.</p>
+        <p className="sub mt-2">Photographiez le <b className="text-navy">verso</b>, côté identité (nom, prénoms, matricule ou NIGEND), à plat et sans reflet. Carte de police, carte militaire gendarmerie ou carte pénitentiaire. La photo est analysée puis détruite dans la seconde, elle n&apos;est jamais enregistrée.</p>
         <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => e.target.files?.[0] && envoyerCarte(e.target.files[0])} />
         {!lecture ? (
           <>
-            <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours…' : 'Prendre la carte en photo'}</button>
+            <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours…' : 'Photographier le verso de ma carte'}</button>
             {msg && <p className="text-[12.5px] text-[#C8323B] mt-3">{msg}</p>}
             <button className="btn-ghost mt-2" onClick={() => setEtape(3)}>Je préfère vérifier par mon adresse pro</button>
           </>
