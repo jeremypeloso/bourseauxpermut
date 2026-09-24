@@ -86,7 +86,7 @@ export default function Compte({ email, profil, gradeLibelle, souhaits, annonce,
           <Section id="abonnement" t="Abonnement" action={<span className={premium ? 'pill-mint' : 'pill-bleu'}>{premium ? 'Premium' : 'Gratuit'}</span>}>
             {premium ? (
               <div className="grid sm:grid-cols-2 gap-3 text-[13.5px]">
-                <div className="bg-paper rounded-xl p-3"><b className="block text-navy">Actif jusqu&apos;au {new Date(profil.premium_jusqua).toLocaleDateString('fr-FR')}</b><span className="text-[#6F7789]">Renouvelé automatiquement chaque mois.</span></div>
+                <div className="bg-paper rounded-xl p-3"><b className="block text-navy">Actif jusqu&apos;au {new Date(profil.premium_jusqua).toLocaleDateString('fr-FR')}</b><span className="text-[#6F7789]">{profil?.premium_offert_le && !profil?.stripe_customer_id ? 'Mois de lancement offert, sans carte bancaire. Rien ne se renouvelle tout seul : à la fin, vous repassez en Gratuit sauf si vous vous abonnez.' : 'Renouvelé automatiquement chaque mois.'}</span></div>
                 <div className="bg-paper rounded-xl p-3"><b className="block text-navy">Résilier</b><span className="text-[#6F7789]">Depuis le portail Stripe (lien dans votre reçu) ou en écrivant à contact@labourseauxpermut.fr. Effet en fin de période.</span></div>
               </div>
             ) : (

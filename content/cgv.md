@@ -31,6 +31,8 @@ Le Site est un outil de mise en relation entre collègues. **Il ne constitue ni 
 
 **Mise en avant** : 4,99 € TTC pour 7 jours, paiement unique, sans abonnement.
 
+**Offre de lancement** : les 100 premiers comptes vérifiés reçoivent automatiquement un mois de Premium offert, sans moyen de paiement. À l'issue du mois, le compte repasse en formule Gratuit, sans reconduction ni prélèvement, sauf souscription volontaire.
+
 Les prix sont indiqués toutes taxes comprises et peuvent être modifiés ; le nouveau prix s'applique à la période suivant sa notification. Les paiements sont traités par Stripe. L'Éditeur ne conserve aucune donnée bancaire.
 
 ## 6. Droit de rétractation
