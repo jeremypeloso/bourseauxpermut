@@ -2,6 +2,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState } from 'react';
+import { estOuverte } from '@/lib/institutions';
 
 const I = {
   ann: 'M4 5h16v14H4zM8 9h8M8 13h5', match: 'M4 7h11l-3-3M20 17H9l3 3M4 17a2 2 0 1 0 0 .1M20 7a2 2 0 1 0 0 .1',
@@ -34,7 +35,7 @@ export default function TopBar({ nbMatchs, institution }: { nbMatchs: number; in
           </nav>
         </div>
         <div className="border-t border-[#E6E9F0] bg-white"><div className="max-w-[1200px] mx-auto px-4 md:px-5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] py-2.5">
-          {chips.filter(([h]) => !h.includes('inst=') || !institution || h.endsWith(institution)).map(([h, t]) => <Link key={h} href={h} className={`shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold border ${h === '/annonces' && path === '/annonces' ? 'bg-navy text-white border-navy' : 'bg-white text-[#3B4457] border-[#E6E9F0]'}`}>{t}</Link>)}
+          {chips.filter(([h]) => !h.includes('inst=') || (estOuverte(h.split('inst=')[1]) && (!institution || h.endsWith(institution)))).map(([h, t]) => <Link key={h} href={h} className={`shrink-0 rounded-full px-3.5 py-2 text-[13px] font-semibold border ${h === '/annonces' && path === '/annonces' ? 'bg-navy text-white border-navy' : 'bg-white text-[#3B4457] border-[#E6E9F0]'}`}>{t}</Link>)}
         </div></div>
       </header>
       <nav className="md:hidden fixed left-0 right-0 bottom-0 z-30 bg-white border-t border-[#E6E9F0] flex justify-around px-1.5 pt-2 pb-[max(10px,env(safe-area-inset-bottom))]">

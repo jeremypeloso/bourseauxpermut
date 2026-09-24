@@ -5,6 +5,7 @@ import { Suspense } from 'react';
 import Image from 'next/image';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 import MotDePasse from '@/components/MotDePasse';
+import { estOuverte } from '@/lib/institutions';
 
 type Etape = 0 | 1 | 2 | 3 | 4 | 5;
 const INSTITUTIONS = [
@@ -90,12 +91,13 @@ function OnboardingInner() {
         <h1 className="h1 text-center mt-3">Vous êtes…</h1>
         <p className="sub text-center mt-2">Chaque institution est un couloir séparé : on ne permute qu&apos;avec ses collègues. Ce choix ne pourra pas être modifié après vérification.</p>
         <div className="flex flex-col gap-3 mt-5">
-          {INSTITUTIONS.map(i => (
-            <button key={i.code} onClick={() => setInst(i.code)} className={`flex items-center gap-3 text-left bg-white rounded-xl2 p-4 border-2 ${inst === i.code ? 'border-bleu bg-[#E6EEFF]' : 'border-[#E6E9F0]'}`}>
-              <span className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${i.c} text-white font-extrabold flex items-center justify-center`}>{i.code}</span>
-              <span><b className="block text-navy">{i.t}</b><small className="sub">{i.s}</small></span>
+          {INSTITUTIONS.map(i => { const ok = estOuverte(i.code); return (
+            <button key={i.code} disabled={!ok} onClick={() => ok && setInst(i.code)} className={`flex items-center gap-3 text-left bg-white rounded-xl2 p-4 border-2 ${!ok ? 'opacity-55 cursor-not-allowed border-[#E6E9F0]' : inst === i.code ? 'border-bleu bg-[#E6EEFF]' : 'border-[#E6E9F0]'}`}>
+              <span className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${i.c} text-white font-extrabold flex items-center justify-center shrink-0`}>{i.code}</span>
+              <span className="flex-1"><b className="block text-navy">{i.t}</b><small className="sub">{ok ? i.s : 'Ouverture prochaine. La police nationale ouvre en premier.'}</small></span>
+              {!ok && <span className="pill-amber shrink-0">Bientôt</span>}
             </button>
-          ))}
+          ); })}
         </div>
         <div className="flex-1" />
         <button className="btn-dark mt-4" onClick={choisirInstitution}>Continuer</button>

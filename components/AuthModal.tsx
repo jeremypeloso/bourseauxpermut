@@ -52,6 +52,7 @@ export default function AuthModal({ open, initial, onClose, notice }: { open: bo
           <>
             <h3 className="text-[24px] font-extrabold tracking-tight text-navy mt-4">Créer mon compte</h3>
             <p className="sub mt-1">Toujours avec votre <b>adresse personnelle</b> : c&apos;est elle qui servira à vous connecter. Aucun lien de connexion n&apos;ira jamais sur un poste de service.</p>
+            <p className="mt-2 text-[12.5px] text-[#9A6A00] bg-[#FFF3D6] rounded-xl px-3 py-2">Ouvert à la <b>Police nationale</b> pour commencer. Gendarmerie et pénitentiaire : ouverture prochaine.</p>
             <input className="field mt-4" type="email" placeholder="votre.adresse@perso.fr" value={email} onChange={e => setEmail(e.target.value)} />
             <p className="text-[13px] font-bold text-navy mt-5">Comment prouver que vous êtes des nôtres ?</p>
             <div className="grid md:grid-cols-2 gap-3 mt-2">
