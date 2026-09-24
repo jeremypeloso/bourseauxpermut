@@ -10,7 +10,7 @@ const I = {
 };
 const Ico = ({ d, cls = 'w-[22px] h-[22px]' }: { d: string; cls?: string }) => <svg viewBox="0 0 24 24" className={cls} fill="none" stroke="currentColor" strokeWidth="1.9" strokeLinecap="round" strokeLinejoin="round"><path d={d} /></svg>;
 
-export default function TopBar({ nbMatchs, institution }: { nbMatchs: number; institution?: string | null }) {
+export default function TopBar({ nbMatchs, institution, admin = false }: { nbMatchs: number; institution?: string | null; admin?: boolean }) {
   const path = usePathname(); const r = useRouter();
   const [q, setQ] = useState('');
   const on = (h: string) => path === h || path.startsWith(h + '/');
@@ -31,7 +31,7 @@ export default function TopBar({ nbMatchs, institution }: { nbMatchs: number; in
             <button className="bg-navy text-white rounded-xl w-8 h-8 md:w-9 md:h-9 flex items-center justify-center" aria-label="Rechercher"><svg viewBox="0 0 24 24" className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="11" cy="11" r="6" /><path d="M20 20l-4.5-4.5" /></svg></button>
           </form>
           <nav className="hidden md:flex gap-1 ml-auto">
-            <NavA h="/annonces" t="Annonces" d={I.ann} /><NavA h="/matchs" t="Mes matchs" d={I.match} badge={nbMatchs} /><NavA h="/favoris" t="Favoris" d={I.fav} /><NavA h="/compte" t="Compte" d={I.user} />
+            <NavA h="/annonces" t="Annonces" d={I.ann} /><NavA h="/matchs" t="Mes matchs" d={I.match} badge={nbMatchs} /><NavA h="/favoris" t="Favoris" d={I.fav} /><NavA h="/compte" t="Compte" d={I.user} />{admin && <NavA h="/admin" t="Admin" d={'M4 4h16v16H4zM8 12h8M12 8v8'} />}
           </nav>
         </div>
         <div className="border-t border-[#E6E9F0] bg-white"><div className="max-w-[1200px] mx-auto px-4 md:px-5 flex gap-1.5 overflow-x-auto [scrollbar-width:none] py-2.5">
