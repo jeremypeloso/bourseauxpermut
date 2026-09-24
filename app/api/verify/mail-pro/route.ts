@@ -64,7 +64,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: false, message: 'Code incorrect.' });
     }
     await admin.from('codes_mail_pro').delete().eq('profil_id', user.id);
-    await admin.from('profils').update({ verifie_mail_pro: true, verifie_le: new Date().toISOString() }).eq('id', user.id);
+    const { data: pr } = await admin.from('profils').select('id').eq('id', user.id).maybeSingle();
+    const { error: pe } = pr
+      ? await admin.from('profils').update({ verifie_mail_pro: true, verifie_le: new Date().toISOString() }).eq('id', user.id)
+      : await admin.from('profils').insert({ id: user.id, institution: 'PN', verifie_mail_pro: true, verifie_le: new Date().toISOString() });
+    if (pe) return NextResponse.json({ ok: false, message: `Profil non enregistré : ${pe.message}` }, { status: 400 });
     return NextResponse.json({ ok: true });
   }
   return NextResponse.json({ error: 'action inconnue' }, { status: 400 });

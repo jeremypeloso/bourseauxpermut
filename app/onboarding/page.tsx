@@ -41,7 +41,7 @@ function OnboardingInner() {
     (async () => {
       const sb = supabaseBrowser();
       const { data: { user } } = await sb.auth.getUser();
-      if (!user) return r.replace('/');
+      if (!user) { await sb.auth.signOut(); return r.replace('/'); }
       setMdpOk(!!user.user_metadata?.mdp);
       const { data } = await sb.from('profils').select('institution, verifie_carte, verifie_mail_pro').eq('id', user.id).maybeSingle();
       if (data) { setInst(data.institution); if (data.verifie_carte || data.verifie_mail_pro) { if (user.user_metadata?.mdp) r.replace('/annonces'); else setEtape(5); } }
@@ -51,7 +51,11 @@ function OnboardingInner() {
   const choisirInstitution = async () => {
     const sb = supabaseBrowser();
     const { data: { user } } = await sb.auth.getUser();
-    await sb.from('profils').upsert({ id: user!.id, institution: inst }, { onConflict: 'id', ignoreDuplicates: true });
+    const { error } = await sb.from('profils').upsert({ id: user!.id, institution: inst }, { onConflict: 'id', ignoreDuplicates: true });
+    if (error) { setMsg(`Impossible de créer le profil : ${error.message}`); return; }
+    // Contrôle : la ligne doit exister (une politique de sécurité ou un verrou peut avoir bloqué silencieusement)
+    const { data: ok } = await sb.from('profils').select('id').eq('id', user!.id).maybeSingle();
+    if (!ok) { setMsg('Profil non créé : contactez le support (contact@labourseauxpermut.fr).'); return; }
     setEtape(1);
   };
 
@@ -99,6 +103,7 @@ function OnboardingInner() {
             </button>
           ); })}
         </div>
+        {msg && <p className="text-[12.5px] text-[#C8323B] mt-3">{msg}</p>}
         <div className="flex-1" />
         <button className="btn-dark mt-4" onClick={choisirInstitution}>Continuer</button>
       </>)}

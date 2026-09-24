@@ -72,7 +72,12 @@ export async function POST(req: NextRequest) {
     profil_id: user.id, nom_enc: encrypt(nom), prenom_enc: encrypt(prenom), mail_pro_enc: encrypt(''),
   });
   await admin.from('empreintes_matricule').upsert({ empreinte, profil_id: user.id });
-  await admin.from('profils').update({ verifie_carte: true, ...(institution ? {} : {}) }).eq('id', user.id);
+  // Crée la ligne profil si elle manque (institution lue sur la carte), sinon la met à jour
+  const { data: pr } = await admin.from('profils').select('id').eq('id', user.id).maybeSingle();
+  const { error: pe } = pr
+    ? await admin.from('profils').update({ verifie_carte: true, verifie_le: new Date().toISOString() }).eq('id', user.id)
+    : await admin.from('profils').insert({ id: user.id, institution: institution ?? 'PN', verifie_carte: true, verifie_le: new Date().toISOString() });
+  if (pe) return NextResponse.json({ ok: false, message: `Profil non enregistré : ${pe.message}` }, { status: 400 });
 
   // On renvoie uniquement ce qu'il faut afficher ; le matricule est masqué.
   return NextResponse.json({ ok: true, nom, prenom, institution, matricule_masque: '•••• ••' + matricule.slice(-2) });
