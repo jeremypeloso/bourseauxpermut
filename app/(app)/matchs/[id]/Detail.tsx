@@ -15,7 +15,8 @@ export default function Detail({ id, rows, premium }: { id: string; rows: any[];
     const j = await res.json();
     if (action === 'reveler') return setAgents(j.agents ?? []);
     if (action === 'ignorer') return r.push('/matchs');
-    setMsg(j.statut === 'confirmee' ? 'Tous les agents ont accepté.' : 'Réponse enregistrée. Vous serez prévenu des réponses des autres.'); r.refresh();
+    setMsg(j.statut === 'confirmee' ? 'Tous les agents ont accepté.' : 'Réponse enregistrée. Les autres agents sont prévenus par mail ; vous recevrez un mail dès qu\'ils auront répondu.');
+    setTimeout(() => location.reload(), 900);
   };
   return (
     <div className="grid lg:grid-cols-[1fr_360px] gap-6 items-start">

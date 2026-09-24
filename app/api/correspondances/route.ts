@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase-server';
 import { decrypt } from '@/lib/crypto';
-import { mailConfirmation } from '@/lib/email';
+import { mailConfirmation, mailAVousDeRepondre, mailCycleFerme } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -22,12 +22,22 @@ export async function POST(req: NextRequest) {
   }
   if (action === 'accepter' || action === 'refuser') {
     if (!premium) return NextResponse.json({ ok: false, paywall: true }, { status: 402 });
-    await sb.from('correspondance_membres').update({ reponse: action === 'accepter' ? 'accepte' : 'refuse' })
+    const { error: ue } = await admin.from('correspondance_membres').update({ reponse: action === 'accepter' ? 'accepte' : 'refuse' })
       .eq('correspondance_id', id).eq('profil_id', user.id);
+    if (ue) return NextResponse.json({ ok: false, message: ue.message }, { status: 400 });
     const { data: membres } = await admin.from('correspondance_membres').select('reponse, profil_id').eq('correspondance_id', id);
     const statut = membres?.some(m => m.reponse === 'refuse') ? 'refusee' : membres?.every(m => m.reponse === 'accepte') ? 'confirmee' : 'en_cours';
     await admin.from('correspondances').update({ statut, updated_at: new Date().toISOString() }).eq('id', id);
-    if (statut === 'confirmee') for (const m of membres ?? []) { try { const { data: u } = await admin.auth.admin.getUserById(m.profil_id); if (u?.user?.email && process.env.RESEND_API_KEY) await mailConfirmation(u.user.email); } catch {} }
+    // Notifications : tout le monde a accepté → confirmation à tous ; un accepte → « à vous de répondre » aux membres en attente ; un refuse → cycle fermé aux autres
+    if (process.env.RESEND_API_KEY) for (const m of membres ?? []) {
+      if (m.profil_id === user.id) continue;
+      try {
+        const { data: u } = await admin.auth.admin.getUserById(m.profil_id); const to = u?.user?.email; if (!to) continue;
+        if (statut === 'confirmee') await mailConfirmation(to);
+        else if (statut === 'refusee') await mailCycleFerme(to);
+        else if (action === 'accepter' && m.reponse === 'attente') await mailAVousDeRepondre(to);
+      } catch {}
+    }
     return NextResponse.json({ ok: true, statut });
   }
   if (action === 'reveler') {
