@@ -55,7 +55,7 @@ function OnboardingInner() {
 
   const envoyerCarte = async (f: File) => {
     setBusy(true); setMsg(null);
-    const fd = new FormData(); fd.append('image', f);
+    const fd = new FormData(); fd.append('image', await reduire(f));
     const res = await fetch('/api/verify/card', { method: 'POST', body: fd }).then(x => x.json());
     setBusy(false);
     if (res.ok) setLecture(res); else setMsg((res.message ?? 'Lecture impossible') + (res.texte_lu ? `\n\n[DEBUG OCR · confiance ${Math.round(res.confiance ?? 0)} %]\n${res.texte_lu}` : ''));
@@ -115,7 +115,7 @@ function OnboardingInner() {
         <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => e.target.files?.[0] && envoyerCarte(e.target.files[0])} />
         {!lecture ? (
           <>
-            <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours…' : 'Photographier le verso de ma carte'}</button>
+            <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours, 5 à 15 secondes…' : 'Photographier le verso de ma carte'}</button>
             {msg && <p className="text-[12.5px] text-[#C8323B] mt-3">{msg}</p>}
             <button className="btn-ghost mt-2" onClick={() => setEtape(3)}>Je préfère vérifier par mon adresse pro</button>
           </>
@@ -166,6 +166,16 @@ function OnboardingInner() {
       </>)}
     </div></main>
   );
+}
+
+/** Réduit la photo dans le navigateur avant envoi : 1400 px max, niveaux de gris, JPEG. L'original ne quitte jamais l'appareil. */
+async function reduire(f: File): Promise<Blob> {
+  const img = await new Promise<HTMLImageElement>((ok, ko) => { const i = document.createElement('img'); i.onload = () => ok(i); i.onerror = ko; i.src = URL.createObjectURL(f); });
+  const k = Math.min(1, 1400 / Math.max(img.width, img.height));
+  const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  const ctx = c.getContext('2d')!; ctx.filter = 'grayscale(1) contrast(1.15)'; ctx.drawImage(img, 0, 0, c.width, c.height);
+  URL.revokeObjectURL(img.src);
+  return await new Promise<Blob>(ok => c.toBlob(b => ok(b ?? f), 'image/jpeg', 0.85));
 }
 
 export default function Onboarding() {

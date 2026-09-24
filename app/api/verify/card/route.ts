@@ -20,7 +20,9 @@ export async function POST(req: NextRequest) {
   if (!file) return NextResponse.json({ error: 'image manquante' }, { status: 400 });
   const buf = Buffer.from(await file.arrayBuffer());
 
-  const worker = await createWorker('fra');
+  // Modèle « fast » (3 à 4 fois plus rapide, suffisant pour du texte imprimé) mis en cache dans /tmp entre deux appels
+  const worker = await createWorker('fra', 1, { langPath: 'https://tessdata.projectnaptha.com/4.0.0_fast', cachePath: '/tmp', gzip: true });
+  await worker.setParameters({ tessedit_pageseg_mode: '6' as any, preserve_interword_spaces: '1' });
   const { data } = await worker.recognize(buf);
   await worker.terminate();
   // Normalisation : majuscules, accents retirés, O/I confondus par l'OCR remis en chiffres après un libellé numérique
