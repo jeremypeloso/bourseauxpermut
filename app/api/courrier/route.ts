@@ -45,7 +45,6 @@ export async function POST(req: NextRequest) {
   saut(); write("Cette permutation, souhaitée de part et d'autre, s'effectuerait à grade et corps équivalents et sans création ni suppression de poste. Je me tiens à votre disposition pour tout complément et vous prie de bien vouloir examiner ma demande avec bienveillance.");
   saut(); write("Je vous prie d'agréer, Monsieur le Directeur, l'expression de mon respect.");
   saut(3); write(nom(user.id), bold); saut(2); write('Signature :');
-  y = 70; page.drawText(nettoyer("Pièces à joindre selon votre institution : accord écrit du ou des permutants, dernier compte rendu d'évaluation, justificatifs éventuels."), { x: M, y, size: 8.5, font, color: rgb(0.45, 0.48, 0.55) });
   const bytes = await pdf.save();
   return new NextResponse(Buffer.from(bytes), { headers: { 'Content-Type': 'application/pdf', 'Content-Disposition': `attachment; filename="demande-mutation-permutation.pdf"` } });
 }
