@@ -20,7 +20,7 @@ export function etat(c: any) {
 }
 
 export default function ListeMatchs({ corrs, premium, verifie }: { corrs: any[]; premium: boolean; verifie: boolean }) {
-  const [pay, setPay] = useState(false);
+  const [pay, setPay] = useState(false); const [voirCloses, setVoirCloses] = useState(false);
   const actives = corrs.filter(c => c.statut !== 'refusee'); const closes = corrs.filter(c => c.statut === 'refusee');
   const Carte = ({ c, idx }: { c: any; idx: number }) => {
     const e = etat(c); const moi = c.membres.find((m: any) => m.est_moi);
@@ -53,13 +53,18 @@ export default function ListeMatchs({ corrs, premium, verifie }: { corrs: any[];
   return (
     <>
       <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
-        <div><h1 className="text-[22px] font-extrabold tracking-tight text-navy">Mes matchs</h1><div className="text-[13px] text-[#6F7789]">{actives.length ? `${actives.length} correspondance${actives.length > 1 ? 's' : ''} en cours. ` : ''}Le matching recroise vos souhaits toutes les heures ; vous êtes prévenu par mail à chaque étape.</div></div>
+        <div><h1 className="text-[22px] font-extrabold tracking-tight text-navy">Mes matchs</h1><div className="text-[13px] text-[#6F7789]">{actives.length ? `${actives.length} correspondance${actives.length > 1 ? 's' : ''} en cours. ` : 'Aucune correspondance en cours. '}Le matching recroise vos souhaits toutes les heures ; vous êtes prévenu par mail à chaque étape.</div></div>
         <Link href="/annonces" className="btn-ghost !w-auto !py-2.5 px-4 text-[14px]">Retour aux annonces</Link>
       </div>
       {!verifie && <div className="card mb-4"><b className="text-navy">Compte à vérifier</b><div className="sub mt-1">Le matching ne prend que les agents vérifiés.</div><Link href="/onboarding" className="btn mt-3 !w-auto">Vérifier mon compte</Link></div>}
-      {verifie && corrs.length === 0 && <div className="card mb-4"><b className="text-navy">Pas encore de correspondance</b><div className="sub mt-1">Plus vos souhaits sont larges (plusieurs villes, cycles acceptés), plus vite ça se ferme. En attendant, <Link href="/annonces" className="text-bleu font-semibold">parcourez les annonces</Link> ou <Link href="/deposer" className="text-bleu font-semibold">publiez la vôtre</Link>.</div></div>}
+      {verifie && actives.length === 0 && <div className="card mb-4"><b className="text-navy">Pas encore de correspondance</b><div className="sub mt-1">Plus vos souhaits sont larges (plusieurs villes, cycles acceptés), plus vite ça se ferme. En attendant, <Link href="/annonces" className="text-bleu font-semibold">parcourez les annonces</Link> ou <Link href="/deposer" className="text-bleu font-semibold">publiez la vôtre</Link>.</div></div>}
       <div className="grid md:grid-cols-2 gap-4">{actives.map((c, i) => <Carte key={c.id} c={c} idx={i} />)}</div>
-      {closes.length > 0 && <><h2 className="text-[14px] font-bold text-[#6F7789] mt-8 mb-3">Refermées</h2><div className="grid md:grid-cols-2 gap-4 opacity-70">{closes.map((c, i) => <Carte key={c.id} c={c} idx={i + actives.length} />)}</div></>}
+      {closes.length > 0 && (
+        <div className="mt-6">
+          <button className="text-[13px] font-semibold text-[#6F7789] hover:text-navy" onClick={() => setVoirCloses(!voirCloses)}>{voirCloses ? 'Masquer' : 'Voir'} les correspondances refermées ({closes.length})</button>
+          {voirCloses && <div className="grid md:grid-cols-2 gap-4 opacity-70 mt-3">{closes.map((c, i) => <Carte key={c.id} c={c} idx={i + actives.length} />)}</div>}
+        </div>
+      )}
       <div className="mt-6 bg-white border border-[#E6E9F0] rounded-2xl px-4 py-3 text-[12.5px] text-[#6F7789]">🔒 Les identités ne sont visibles qu&apos;une fois que tous les agents ont accepté. Un refus referme la correspondance pour tout le monde.</div>
       <Paywall open={pay} onClose={() => setPay(false)} />
     </>
