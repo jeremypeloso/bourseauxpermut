@@ -55,10 +55,15 @@ function OnboardingInner() {
 
   const envoyerCarte = async (f: File) => {
     setBusy(true); setMsg(null);
-    const fd = new FormData(); fd.append('image', await reduire(f));
-    const res = await fetch('/api/verify/card', { method: 'POST', body: fd }).then(x => x.json());
-    setBusy(false);
-    if (res.ok) setLecture(res); else setMsg((res.message ?? 'Lecture impossible') + (res.texte_lu ? `\n\n[DEBUG OCR · confiance ${Math.round(res.confiance ?? 0)} %]\n${res.texte_lu}` : ''));
+    try {
+      const fd = new FormData(); fd.append('image', await reduire(f), 'carte.jpg');
+      const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 55000);
+      const r = await fetch('/api/verify/card', { method: 'POST', body: fd, signal: ctrl.signal }); clearTimeout(t);
+      const res = await r.json().catch(() => ({ ok: false, message: `Erreur serveur (${r.status})` }));
+      if (res.ok) setLecture(res); else setMsg((res.message ?? res.error ?? `Erreur (${r.status})`) + (res.texte_lu ? `\n\n[DEBUG OCR · confiance ${Math.round(res.confiance ?? 0)} %]\n${res.texte_lu}` : ''));
+    } catch (e: any) {
+      setMsg(e?.name === 'AbortError' ? 'L\'analyse a dépassé 55 secondes. Réessayez avec une photo plus nette et mieux cadrée.' : `Envoi impossible : ${e?.message ?? 'réseau'}`);
+    } finally { setBusy(false); }
   };
 
   const envoyerMail = async () => {

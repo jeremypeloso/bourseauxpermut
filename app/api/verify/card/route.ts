@@ -21,10 +21,22 @@ export async function POST(req: NextRequest) {
   const buf = Buffer.from(await file.arrayBuffer());
 
   // Modèle « fast » (3 à 4 fois plus rapide, suffisant pour du texte imprimé) mis en cache dans /tmp entre deux appels
-  const worker = await createWorker('fra', 1, { langPath: 'https://tessdata.projectnaptha.com/4.0.0_fast', cachePath: '/tmp', gzip: true });
-  await worker.setParameters({ tessedit_pageseg_mode: '6' as any, preserve_interword_spaces: '1' });
-  const { data } = await worker.recognize(buf);
-  await worker.terminate();
+  let data: any;
+  try {
+    const ocr = (async () => {
+      const t0 = Date.now();
+      const worker = await createWorker('fra', 1, { langPath: 'https://tessdata.projectnaptha.com/4.0.0_fast', cachePath: '/tmp', gzip: true, logger: m => { if (m.status === 'loading language traineddata' || m.status === 'initializing api') console.log('OCR', m.status, Date.now() - t0, 'ms'); } });
+      await worker.setParameters({ tessedit_pageseg_mode: '6' as any, preserve_interword_spaces: '1' });
+      const r = await worker.recognize(buf);
+      await worker.terminate();
+      console.log('OCR terminé en', Date.now() - t0, 'ms');
+      return r.data;
+    })();
+    data = await Promise.race([ocr, new Promise((_, rej) => setTimeout(() => rej(new Error('délai de 45 s dépassé au démarrage du moteur OCR')), 45000))]);
+  } catch (e: any) {
+    console.error('OCR', e?.message);
+    return NextResponse.json({ ok: false, message: `Analyse indisponible : ${String(e?.message ?? e).slice(0, 120)}` }, { status: 500 });
+  }
   // Normalisation : majuscules, accents retirés, O/I confondus par l'OCR remis en chiffres après un libellé numérique
   const texte = data.text.toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
   const num = (t?: string) => t?.replace(/[OQD]/g, '0').replace(/[IL|]/g, '1').replace(/[^0-9]/g, '');
