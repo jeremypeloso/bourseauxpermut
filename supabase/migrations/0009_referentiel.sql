@@ -31,8 +31,7 @@ insert into grades values
 on conflict (code) do nothing;
 
 -- Un service de base par département et par institution (chef-lieu), pour que chaque département soit sélectionnable
-create temporary table pref (dep text, ville text, lat numeric, lng numeric);
-insert into pref values
+with pref(dep, ville, lat, lng) as (values
  ('01','Bourg-en-Bresse',46.2,5.23),('02','Laon',49.56,3.62),('03','Moulins',46.57,3.34),('04','Digne-les-Bains',44.09,6.24),('05','Gap',44.56,6.08),('06','Nice',43.7,7.27),('07','Privas',44.73,4.59),('08','Charleville-Mézières',49.77,4.72),('09','Foix',42.96,1.6),('10','Troyes',48.3,4.07),
  ('11','Carcassonne',43.21,2.35),('12','Rodez',44.35,2.57),('13','Marseille',43.3,5.37),('14','Caen',49.18,-0.36),('15','Aurillac',44.93,2.44),('16','Angoulême',45.65,0.16),('17','La Rochelle',46.16,-1.15),('18','Bourges',47.08,2.4),('19','Tulle',45.27,1.77),('21','Dijon',47.32,5.04),
  ('22','Saint-Brieuc',48.51,-2.76),('23','Guéret',46.17,1.87),('24','Périgueux',45.18,0.72),('25','Besançon',47.24,6.02),('26','Valence',44.93,4.89),('27','Évreux',49.02,1.15),('28','Chartres',48.44,1.49),('29','Quimper',48.0,-4.1),('2A','Ajaccio',41.93,8.74),('2B','Bastia',42.7,9.45),
@@ -43,8 +42,8 @@ insert into pref values
  ('70','Vesoul',47.62,6.15),('71','Mâcon',46.31,4.84),('72','Le Mans',48.0,0.2),('73','Chambéry',45.57,5.92),('74','Annecy',45.9,6.13),('75','Paris',48.86,2.35),('76','Rouen',49.44,1.1),('77','Melun',48.54,2.66),('78','Versailles',48.8,2.13),('79','Niort',46.32,-0.46),
  ('80','Amiens',49.9,2.3),('81','Albi',43.93,2.15),('82','Montauban',44.02,1.36),('83','Toulon',43.12,5.93),('84','Avignon',43.95,4.81),('85','La Roche-sur-Yon',46.67,-1.43),('86','Poitiers',46.58,0.34),('87','Limoges',45.83,1.26),('88','Épinal',48.17,6.45),('89','Auxerre',47.8,3.57),
  ('90','Belfort',47.64,6.86),('91','Évry',48.63,2.44),('92','Nanterre',48.89,2.2),('93','Bobigny',48.91,2.45),('94','Créteil',48.79,2.47),('95','Cergy',49.03,2.08),
- ('971','Basse-Terre',16.0,-61.73),('972','Fort-de-France',14.6,-61.07),('973','Cayenne',4.93,-52.33),('974','Saint-Denis',-20.88,55.45),('976','Mamoudzou',-12.78,45.23),('975','Saint-Pierre',46.78,-56.17),('988','Nouméa',-22.27,166.44),('987','Papeete',-17.53,-149.57);
-
+ ('971','Basse-Terre',16.0,-61.73),('972','Fort-de-France',14.6,-61.07),('973','Cayenne',4.93,-52.33),('974','Saint-Denis',-20.88,55.45),('976','Mamoudzou',-12.78,45.23),('975','Saint-Pierre',46.78,-56.17),('988','Nouméa',-22.27,166.44),('987','Papeete',-17.53,-149.57)
+)
 insert into services (institution, ville, departement, type, libelle, outre_mer, lat, lng)
 select i.code, p.ville, p.dep,
   case i.code when 'PN' then 'CSP' when 'GN' then 'GGD' else 'EP' end,
@@ -52,7 +51,6 @@ select i.code, p.ville, p.dep,
   p.dep like '97%' or p.dep like '98%', p.lat, p.lng
 from pref p cross join institutions i
 where not exists (select 1 from services s where s.institution = i.code and s.departement = p.dep and s.ville = p.ville and s.type = case i.code when 'PN' then 'CSP' when 'GN' then 'GGD' else 'EP' end);
-drop table pref;
 
 -- Services ajoutés par les agents (affectation absente du référentiel) : traçabilité, modération possible
 alter table services add column if not exists ajoute_par uuid references profils(id) on delete set null;
