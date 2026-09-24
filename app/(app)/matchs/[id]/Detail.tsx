@@ -14,6 +14,7 @@ export default function Detail({ id, rows, premium }: { id: string; rows: any[];
     const res = await fetch('/api/correspondances', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action, raison }) });
     if (res.status === 402) return setPay(true);
     const j = await res.json();
+    if (j.ok === false || j.error) { setMsg(j.message ?? j.error ?? 'Erreur'); setDecl(false); return; }
     if (action === 'reveler') return setAgents(j.agents ?? []);
     if (action === 'ignorer' || action === 'decliner') return r.push('/matchs');
     setMsg(j.statut === 'confirmee' ? 'Tous les agents ont accepté.' : 'Réponse enregistrée. Les autres agents sont prévenus par mail ; vous recevrez un mail dès qu\'ils auront répondu.');
