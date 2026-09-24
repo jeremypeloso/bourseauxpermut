@@ -14,7 +14,7 @@ export async function GET(_req: NextRequest, { params }: { params: { id: string 
   if (!verifie) return NextResponse.json({ ok: true, verifie: false });
   const { data: a } = await admin.from('annonces').select('*, services(ville, departement)').eq('id', params.id).eq('institution', moi.institution).eq('statut', 'active').maybeSingle();
   if (!a) return NextResponse.json({ ok: false, error: 'introuvable' }, { status: 404 });
-  const mienne = a.profil_id === user.id;
+  const mienne = a.profil_id === user.id && !a.demo;
   let visible = premium || mienne;
   if (!visible) {
     const { data: rows } = await admin.from('annonces').select('*, services(ville, departement)').eq('institution', moi.institution).eq('statut', 'active');

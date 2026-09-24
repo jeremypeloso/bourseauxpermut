@@ -29,7 +29,7 @@ export async function GET(req: NextRequest) {
   const vraies = liste.filter(a => !a.demo); const exemples = liste.filter(a => a.demo).slice(0, Math.max(0, MAX_EXEMPLES - vraies.length));
   liste = [...vraies, ...exemples];
   liste.sort((a, b) => (Number(!a.demo) - Number(!b.demo)) * -1 || (Number(estBoost(b)) - Number(estBoost(a))) || (score(b) - score(a)) || (b.created_at > a.created_at ? 1 : -1));
-  const out = liste.map((a, i) => { const mienne = a.profil_id === user.id; return premium || mienne || i < CLAIR_GRATUIT ? clair(a, mienne, score(a)) : entete(a); });
+  const out = liste.map((a, i) => { const mienne = a.profil_id === user.id && !a.demo; return premium || mienne || i < CLAIR_GRATUIT ? clair(a, mienne, score(a)) : entete(a); });
   return NextResponse.json({ ok: true, verifie: true, premium, annonces: out, total: liste.length, exemples: liste.filter(a => a.demo).length, en_clair: premium ? liste.length : Math.min(CLAIR_GRATUIT, liste.length) });
 }
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
   if (!p.service_id || !(p.souhaits ?? []).length) return NextResponse.json({ ok: false, message: 'Renseignez votre affectation et au moins un souhait.' }, { status: 400 });
   const cibles = (p.souhaits as any[]).sort((a, b) => a.rang - b.rang).map(s => ({ service_id: s.service_id, ville: s.services?.ville ?? null, departement: s.departement ?? s.services?.departement ?? null }));
   const base = { profil_id: user.id, institution: p.institution, corps: p.corps, grade: p.grade, service_id: p.service_id, type_service: p.type_service, anciennete_poste_mois: p.anciennete_poste_mois, depart_des: p.depart_des, cibles, commentaire_structure: { accepte_cycles: p.accepte_cycles, deux_fois: !!(p.verifie_carte && p.verifie_mail_pro) }, statut: 'active', updated_at: new Date().toISOString() };
-  const { data: ex } = await admin.from('annonces').select('id').eq('profil_id', user.id).eq('statut', 'active').maybeSingle();
+  const { data: ex } = await admin.from('annonces').select('id').eq('profil_id', user.id).eq('statut', 'active').eq('demo', false).maybeSingle();
   const { data: row, error } = ex ? await admin.from('annonces').update(base).eq('id', ex.id).select('id').single() : await admin.from('annonces').insert(base).select('id').single();
   if (error) return NextResponse.json({ ok: false, message: error.message }, { status: 400 });
   return NextResponse.json({ ok: true, id: row!.id });
@@ -52,6 +52,6 @@ export async function POST(req: NextRequest) {
 export async function DELETE() {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: 'non connecté' }, { status: 401 });
-  await supabaseAdmin().from('annonces').update({ statut: 'retiree', updated_at: new Date().toISOString() }).eq('profil_id', user.id).eq('statut', 'active');
+  await supabaseAdmin().from('annonces').update({ statut: 'retiree', updated_at: new Date().toISOString() }).eq('profil_id', user.id).eq('statut', 'active').eq('demo', false);
   return NextResponse.json({ ok: true });
 }
