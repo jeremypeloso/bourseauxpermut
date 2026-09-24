@@ -32,6 +32,7 @@ function OnboardingInner() {
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const [mdpOk, setMdpOk] = useState(false);
+  const [apercu, setApercu] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -56,14 +57,16 @@ function OnboardingInner() {
   const envoyerCarte = async (f: File) => {
     setBusy(true); setMsg(null);
     try {
-      const fd = new FormData(); fd.append('image', await reduire(f), 'carte.jpg');
+      const petite = await reduire(f);
+      setApercu(URL.createObjectURL(petite));
+      const fd = new FormData(); fd.append('image', petite, 'carte.jpg');
       const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 55000);
       const r = await fetch('/api/verify/card', { method: 'POST', body: fd, signal: ctrl.signal }); clearTimeout(t);
       const res = await r.json().catch(() => ({ ok: false, message: `Erreur serveur (${r.status})` }));
       if (res.ok) setLecture(res); else setMsg((res.message ?? res.error ?? `Erreur (${r.status})`) + (res.texte_lu ? `\n\n[DEBUG OCR · confiance ${Math.round(res.confiance ?? 0)} %]\n${res.texte_lu}` : ''));
     } catch (e: any) {
       setMsg(e?.name === 'AbortError' ? 'L\'analyse a dépassé 55 secondes. Réessayez avec une photo plus nette et mieux cadrée.' : `Envoi impossible : ${e?.message ?? 'réseau'}`);
-    } finally { setBusy(false); }
+    } finally { setBusy(false); setTimeout(() => setApercu(a => { if (a) URL.revokeObjectURL(a); return null; }), 600); }
   };
 
   const envoyerMail = async () => {
@@ -120,6 +123,17 @@ function OnboardingInner() {
         <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) envoyerCarte(f); }} />
         {!lecture ? (
           <>
+            {busy && apercu && (
+              <div className="relative mt-5 rounded-2xl overflow-hidden bg-navy aspect-[1.58] shadow-[0_20px_40px_-20px_rgba(15,27,51,.6)]">
+                <img src={apercu} alt="" className="absolute inset-0 w-full h-full object-cover opacity-90" />
+                <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(15,27,51,.35),transparent_30%,transparent_70%,rgba(15,27,51,.35))]" />
+                {/* coins de cadrage */}
+                {['top-3 left-3 border-t-2 border-l-2', 'top-3 right-3 border-t-2 border-r-2', 'bottom-3 left-3 border-b-2 border-l-2', 'bottom-3 right-3 border-b-2 border-r-2'].map(c => <span key={c} className={`absolute w-6 h-6 border-[#8FF0C0] rounded-sm ${c}`} />)}
+                {/* ligne de scan */}
+                <div className="absolute left-0 right-0 h-[3px] bg-[#8FF0C0] shadow-[0_0_18px_4px_rgba(143,240,192,.7)] animate-scan" />
+                <div className="absolute left-0 right-0 bottom-0 px-4 py-3 text-[12px] text-white/90 flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#8FF0C0] animate-pulse" />Lecture en cours… la photo sera détruite à la fin de l&apos;analyse.</div>
+              </div>
+            )}
             <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours, 5 à 15 secondes…' : msg ? 'Reprendre la photo' : 'Photographier le verso de ma carte'}</button>
             {msg && <p className="text-[12.5px] text-[#C8323B] mt-3 whitespace-pre-wrap">{msg}</p>}
             {msg && <p className="sub mt-1">Vous pouvez réessayer autant de fois que nécessaire : rien n&apos;est conservé entre deux essais. Astuce : carte à plat, lumière du jour, cadrage serré, sans reflet.</p>}
