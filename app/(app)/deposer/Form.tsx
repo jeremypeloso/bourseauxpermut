@@ -4,15 +4,18 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { supabaseBrowser } from '@/lib/supabase-browser';
 import Paywall from '@/components/Paywall';
+import ChoixAffectation, { Service } from '@/components/ChoixAffectation';
 
 export default function FormDepot({ profil, souhaits, services, corps, grades, annonce }: any) {
   const r = useRouter(); const sb = supabaseBrowser();
+  const [svcs, setSvcs] = useState<Service[]>(services);
+  const ajouter = (x: Service) => setSvcs(l => l.some(y => y.id === x.id) ? l : [...l, x]);
   const [p, setP] = useState({ corps: profil?.corps ?? '', grade: profil?.grade ?? '', service_id: profil?.service_id ?? '', type_service: profil?.type_service ?? '', anciennete_poste_mois: profil?.anciennete_poste_mois ?? 0, depart_des: profil?.depart_des ?? '', accepte_cycles: profil?.accepte_cycles ?? true, accepte_changer_service: profil?.accepte_changer_service ?? false });
   const [s, setS] = useState<any[]>(souhaits.length ? souhaits : [{ rang: 1, service_id: '' }]);
   const [vis, setVis] = useState<'simple' | 'boost' | 'premium'>(annonce?.mise_en_avant_jusqua ? 'boost' : 'simple');
   const [msg, setMsg] = useState<string | null>(null); const [busy, setBusy] = useState(false); const [pay, setPay] = useState(false);
   const verifie = profil?.verifie_carte || profil?.verifie_mail_pro;
-  const sv = (id: any) => services.find((x: any) => String(x.id) === String(id));
+  const sv = (id: any) => svcs.find((x: any) => String(x.id) === String(id));
   const cibles = s.filter(x => x.service_id).map(x => sv(x.service_id)?.ville).filter(Boolean);
 
   const publier = async () => {
@@ -45,8 +48,8 @@ export default function FormDepot({ profil, souhaits, services, corps, grades, a
         <div className="grid md:grid-cols-2 gap-3">
           <Fld l="Institution"><input className="field mt-1" value={profil?.institution ?? ''} disabled /></Fld>
           <Fld l="Corps"><select className="field mt-1" value={p.corps} onChange={e => setP({ ...p, corps: e.target.value, grade: '' })}><option value="">—</option>{corps.map((c: any) => <option key={c.code} value={c.code}>{c.libelle}</option>)}</select></Fld>
-          <Fld l="Grade"><select className="field mt-1" value={p.grade} onChange={e => setP({ ...p, grade: e.target.value })}><option value="">—</option>{grades.filter((g: any) => g.corps === p.corps).map((g: any) => <option key={g.code} value={g.code}>{g.libelle}</option>)}</select></Fld>
-          <Fld l="Affectation"><select className="field mt-1" value={p.service_id} onChange={e => setP({ ...p, service_id: e.target.value })}><option value="">—</option>{services.map((x: any) => <option key={x.id} value={x.id}>{x.libelle} ({x.departement})</option>)}</select></Fld>
+          <Fld l="Grade"><select className="field mt-1" value={p.grade} onChange={e => setP({ ...p, grade: e.target.value })}><option value="">—</option>{grades.filter((g: any) => g.corps === p.corps).sort((a: any, b: any) => a.rang - b.rang).map((g: any) => <option key={g.code} value={g.code}>{g.libelle}</option>)}</select></Fld>
+          <div className="md:col-span-2"><span className="block text-[12px] text-[#6F7789] mb-1">Affectation</span><ChoixAffectation institution={profil?.institution ?? 'PN'} services={svcs} value={p.service_id} onChange={v => setP({ ...p, service_id: v })} onAjout={ajouter} /></div>
           <Fld l="Type de service"><input className="field mt-1" value={p.type_service} onChange={e => setP({ ...p, type_service: e.target.value })} placeholder="SP jour, BAC nuit, brigade, détention…" /></Fld>
           <Fld l="Ancienneté dans le poste (mois)"><input type="number" className="field mt-1" value={p.anciennete_poste_mois} onChange={e => setP({ ...p, anciennete_poste_mois: +e.target.value })} /></Fld>
           <Fld l="Départ possible dès"><input type="date" className="field mt-1" value={p.depart_des} onChange={e => setP({ ...p, depart_des: e.target.value })} /></Fld>
@@ -55,9 +58,9 @@ export default function FormDepot({ profil, souhaits, services, corps, grades, a
 
       <Panel t="Vous souhaitez aller vers" right={<span className="text-[12px] text-[#6F7789]">jusqu&apos;à 5, par ordre</span>}>
         {s.map((x, i) => (
-          <div key={i} className="flex items-center gap-2 mt-2">
+          <div key={i} className="flex items-start gap-2 mt-2">
             <span className="w-7 h-7 rounded-lg bg-navy text-white text-[12px] font-extrabold flex items-center justify-center shrink-0">{i + 1}</span>
-            <select className="field !py-2.5" value={x.service_id} onChange={e => { const a = [...s]; a[i] = { ...a[i], service_id: e.target.value }; setS(a); }}><option value="">Choisir une affectation…</option>{services.map((y: any) => <option key={y.id} value={y.id}>{y.libelle} ({y.departement})</option>)}</select>
+            <div className="flex-1 min-w-0"><ChoixAffectation compact institution={profil?.institution ?? 'PN'} services={svcs} value={x.service_id} onChange={v => { const a = [...s]; a[i] = { ...a[i], service_id: v }; setS(a); }} onAjout={ajouter} /></div>
             <button onClick={() => { if (i > 0) { const a = [...s]; [a[i - 1], a[i]] = [a[i], a[i - 1]]; setS(a); } }} className="w-9 h-9 rounded-lg bg-paper text-[#6F7789]">↑</button>
             <button onClick={() => setS(s.filter((_, j) => j !== i))} className="w-9 h-9 rounded-lg bg-paper text-[#C8323B]">×</button>
           </div>

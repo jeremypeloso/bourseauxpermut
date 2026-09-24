@@ -9,7 +9,7 @@ export default async function Deposer() {
   const { data: souhaits } = await sb.from('souhaits').select('*').eq('profil_id', user.id).order('rang');
   const { data: services } = await sb.from('services').select('id, ville, type, libelle, departement').eq('institution', profil?.institution ?? 'PN').order('ville');
   const { data: corps } = await sb.from('corps').select('code, libelle').eq('institution', profil?.institution ?? 'PN');
-  const { data: grades } = await sb.from('grades').select('code, libelle, corps');
+  const { data: grades } = await sb.from('grades').select('code, libelle, corps, rang');
   const { data: annonce } = await sb.from('annonces').select('id, mise_en_avant_jusqua').eq('profil_id', user.id).eq('statut', 'active').eq('demo', false).maybeSingle();
   return <FormDepot profil={profil} souhaits={souhaits ?? []} services={services ?? []} corps={corps ?? []} grades={grades ?? []} annonce={annonce} />;
 }
