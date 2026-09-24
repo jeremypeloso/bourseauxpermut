@@ -10,9 +10,9 @@ export default function Paywall({ open, onClose }: { open: boolean; onClose: () 
     if (url) location.href = url; else setBusy(false);
   };
   return (
-    <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-end" onClick={e => e.target === e.currentTarget && onClose()}>
-      <div className="w-full max-w-[430px] mx-auto bg-paper rounded-t-[30px] px-5 pt-3 pb-8">
-        <div className="w-10 h-1.5 bg-[#CBD0DA] rounded-full mx-auto mb-4" />
+    <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-end md:items-center justify-center md:p-6" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="w-full max-w-[520px] bg-paper rounded-t-[30px] md:rounded-[30px] px-5 md:px-7 pt-3 md:pt-6 pb-8 md:pb-7 max-h-[92vh] overflow-y-auto shadow-[0_30px_80px_-30px_rgba(15,27,51,.6)]">
+        <div className="w-10 h-1.5 bg-[#CBD0DA] rounded-full mx-auto mb-4 md:hidden" />
         <h2 className="h1 text-center text-[22px]">Tout voir, répondre sans limite</h2>
         <p className="sub text-center my-3">Le prix d&apos;un aller-retour en train par mois, pour ne plus en faire.</p>
         <div className="rounded-3xl p-5 text-white bg-gradient-to-br from-navy2 to-navy">
