@@ -112,11 +112,12 @@ function OnboardingInner() {
       {etape === 2 && (<>
         <h1 className="h1">Vérification<br /><span className="text-bleu">Votre carte pro</span></h1>
         <p className="sub mt-2">Photographiez le <b className="text-navy">verso</b>, côté identité (nom, prénoms, matricule ou NIGEND), à plat et sans reflet. Carte de police, carte militaire gendarmerie ou carte pénitentiaire. La photo est analysée puis détruite dans la seconde, elle n&apos;est jamais enregistrée.</p>
-        <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => e.target.files?.[0] && envoyerCarte(e.target.files[0])} />
+        <input ref={file} type="file" accept="image/*" capture="environment" className="hidden" onChange={e => { const f = e.target.files?.[0]; e.target.value = ''; if (f) envoyerCarte(f); }} />
         {!lecture ? (
           <>
-            <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours, 5 à 15 secondes…' : 'Photographier le verso de ma carte'}</button>
-            {msg && <p className="text-[12.5px] text-[#C8323B] mt-3">{msg}</p>}
+            <button className="btn mt-5" onClick={() => file.current?.click()} disabled={busy}>{busy ? 'Analyse en cours, 5 à 15 secondes…' : msg ? 'Reprendre la photo' : 'Photographier le verso de ma carte'}</button>
+            {msg && <p className="text-[12.5px] text-[#C8323B] mt-3 whitespace-pre-wrap">{msg}</p>}
+            {msg && <p className="sub mt-1">Vous pouvez réessayer autant de fois que nécessaire : rien n&apos;est conservé entre deux essais. Astuce : carte à plat, lumière du jour, cadrage serré, sans reflet.</p>}
             <button className="btn-ghost mt-2" onClick={() => setEtape(3)}>Je préfère vérifier par mon adresse pro</button>
           </>
         ) : (
@@ -129,6 +130,7 @@ function OnboardingInner() {
             </div>
             <p className="sub mt-3">Le matricule est transformé en empreinte irréversible. La photo a été détruite.</p>
             <button className="btn mt-3" onClick={() => setEtape(4)}>C'est vérifié, continuer</button>
+            <button className="btn-ghost mt-2" onClick={() => { setLecture(null); setMsg(null); file.current?.click(); }}>Ce n'est pas correct, reprendre la photo</button>
             <button className="btn-ghost mt-2" onClick={() => setEtape(3)}>Ajouter aussi mon adresse pro (badge « Vérifié deux fois »)</button>
           </div>
         )}
