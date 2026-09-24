@@ -12,7 +12,6 @@ const ok = (t) => console.log('✓', t), ko = (t) => { console.log('✗', t); pr
 const COMPTES = [
   { email: 'test1@labourseauxpermut.fr', mdp: 'Test1234!', institution: 'PN', corps: 'CEA', grade: 'GPX', ville: 'Montpellier', service: 'SP jour', souhaits: ['Nice', 'Toulouse'] },
   { email: 'test2@labourseauxpermut.fr', mdp: 'Test1234!', institution: 'PN', corps: 'CEA', grade: 'GPX', ville: 'Nice', service: 'SP jour', souhaits: ['Montpellier'] },
-  { email: 'test3@labourseauxpermut.fr', mdp: 'Test1234!', institution: 'GN', corps: 'SOG', grade: 'GEN', ville: 'Nice', service: 'Brigade', souhaits: ['Nice'] },
 ];
 
 console.log('\n== La Bourse aux permut\' · test local ==', SITE, '\n');
@@ -73,7 +72,6 @@ console.log(`
 Connexion sur ${SITE} :
   test1@labourseauxpermut.fr / Test1234!   (Montpellier → Nice, Premium)
   test2@labourseauxpermut.fr / Test1234!   (Nice → Montpellier, Premium)
-  test3@labourseauxpermut.fr / Test1234!   (gendarme Nice, ne doit rien voir des annonces police)
 
 À voir : /annonces (les annonces des autres), /matchs (la permutation directe), accepter des deux côtés puis "Voir les identités".
 Pour tout effacer : node scripts/test-local.mjs --reset

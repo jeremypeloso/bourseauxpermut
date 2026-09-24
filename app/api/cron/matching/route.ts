@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Agent, construireGraphe, scorer, trouverCycles } from '@/lib/matching';
+import { mailCorrespondance } from '@/lib/email';
 
 export const runtime = 'nodejs';
 export const maxDuration = 60;
@@ -51,5 +52,16 @@ export async function GET(req: NextRequest) {
     await admin.from('correspondance_membres').insert(membres);
     crees++;
   }
-  return NextResponse.json({ agents: agents.length, cycles: cycles.length, crees });
+  // Notifications dues : Premium immédiat, gratuit 48 h plus tard ; un seul mail par membre et par correspondance
+  let mails = 0;
+  const { data: dus } = await admin.from('correspondance_membres').select('correspondance_id, profil_id, correspondances!inner(statut)').lte('notifie_le', new Date().toISOString()).is('mail_envoye_le', null).eq('correspondances.statut', 'proposee').limit(200);
+  for (const m of dus ?? []) {
+    try {
+      const { data: u } = await admin.auth.admin.getUserById(m.profil_id);
+      if (u?.user?.email && process.env.RESEND_API_KEY) await mailCorrespondance(u.user.email);
+      await admin.from('correspondance_membres').update({ mail_envoye_le: new Date().toISOString() }).eq('correspondance_id', m.correspondance_id).eq('profil_id', m.profil_id);
+      mails++;
+    } catch (e: any) { console.error('mail correspondance', e?.message); }
+  }
+  return NextResponse.json({ agents: agents.length, cycles: cycles.length, crees, mails });
 }

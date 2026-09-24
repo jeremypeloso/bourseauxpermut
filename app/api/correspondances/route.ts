@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser, supabaseAdmin, supabaseServer } from '@/lib/supabase-server';
 import { decrypt } from '@/lib/crypto';
+import { mailConfirmation } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -23,9 +24,10 @@ export async function POST(req: NextRequest) {
     if (!premium) return NextResponse.json({ ok: false, paywall: true }, { status: 402 });
     await sb.from('correspondance_membres').update({ reponse: action === 'accepter' ? 'accepte' : 'refuse' })
       .eq('correspondance_id', id).eq('profil_id', user.id);
-    const { data: membres } = await admin.from('correspondance_membres').select('reponse').eq('correspondance_id', id);
+    const { data: membres } = await admin.from('correspondance_membres').select('reponse, profil_id').eq('correspondance_id', id);
     const statut = membres?.some(m => m.reponse === 'refuse') ? 'refusee' : membres?.every(m => m.reponse === 'accepte') ? 'confirmee' : 'en_cours';
     await admin.from('correspondances').update({ statut, updated_at: new Date().toISOString() }).eq('id', id);
+    if (statut === 'confirmee') for (const m of membres ?? []) { try { const { data: u } = await admin.auth.admin.getUserById(m.profil_id); if (u?.user?.email && process.env.RESEND_API_KEY) await mailConfirmation(u.user.email); } catch {} }
     return NextResponse.json({ ok: true, statut });
   }
   if (action === 'reveler') {

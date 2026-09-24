@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { currentUser, supabaseAdmin } from '@/lib/supabase-server';
+import { mailReponseAnnonce } from '@/lib/email';
 
 export const runtime = 'nodejs';
 
@@ -27,5 +28,6 @@ export async function POST(req: NextRequest) {
     { correspondance_id: corr.id, profil_id: a.profil_id, position: 2, vers_service_id: moi!.service_id, reponse: 'attente', notifie_le: now },
   ]);
   await admin.from('annonce_reponses').insert({ annonce_id, profil_id: user.id, correspondance_id: corr.id });
+  try { const { data: u } = await admin.auth.admin.getUserById(a.profil_id); if (u?.user?.email && process.env.RESEND_API_KEY) await mailReponseAnnonce(u.user.email); } catch {}
   return NextResponse.json({ ok: true, correspondance_id: corr.id });
 }
