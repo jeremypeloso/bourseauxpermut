@@ -6,7 +6,7 @@ import Link from 'next/link';
 /** Courrier de demande de mutation par permutation, pré-rempli, à imprimer ou enregistrer en PDF (impression du navigateur). */
 export default function Courrier() {
   const { id } = useParams<{ id: string }>();
-  const [d, setD] = useState<any>(null); const [err, setErr] = useState<string | null>(null);
+  const [d, setD] = useState<any>(null); const [err, setErr] = useState<string | null>(null); const [dl, setDl] = useState(false);
   const [champs, setChamps] = useState({ matricule: '', service: '', ville: '', lieu: '', destinataire: 'Monsieur le Directeur départemental de la police nationale' });
   useEffect(() => {
     fetch('/api/correspondances', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, action: 'reveler' }) }).then(r => r.json()).then(j => { if (j.ok === false || j.error) setErr(j.message ?? j.error ?? 'Correspondance non confirmée'); else setD(j); });
@@ -19,7 +19,7 @@ export default function Courrier() {
   return (
     <div className="max-w-[900px] mx-auto">
       <div className="print:hidden bg-white border border-[#E6E9F0] rounded-2xl p-5 mb-4">
-        <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-[20px] font-extrabold text-navy">Courrier de demande de mutation par permutation</h1><p className="text-[13px] text-[#6F7789]">Pré-rempli avec les identités révélées. Complétez les champs, relisez, imprimez ou enregistrez en PDF. Chaque agent fait le sien.</p></div><div className="flex gap-2"><Link href={`/matchs/${id}`} className="btn-ghost !w-auto !py-2.5 px-4 text-[13px]">Retour</Link><button className="btn !w-auto !py-2.5 px-4 text-[13px]" onClick={() => window.print()}>Imprimer / PDF</button></div></div>
+        <div className="flex flex-wrap items-center justify-between gap-3"><div><h1 className="text-[20px] font-extrabold text-navy">Courrier de demande de mutation par permutation</h1><p className="text-[13px] text-[#6F7789]">Pré-rempli avec les identités révélées. Complétez les champs, vérifiez l'aperçu ci-dessous, puis téléchargez le PDF prêt à signer. Chaque agent fait le sien.</p></div><div className="flex gap-2"><Link href={`/matchs/${id}`} className="btn-ghost !w-auto !py-2.5 px-4 text-[13px]">Retour</Link><button className="btn !w-auto !py-2.5 px-4 text-[13px]" disabled={dl} onClick={async () => { setDl(true); const r = await fetch('/api/courrier', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ id, ...champs }) }); setDl(false); if (!r.ok) { const j = await r.json().catch(() => ({})); return alert(j.message ?? 'Erreur'); } const blob = await r.blob(); const u = URL.createObjectURL(blob); const a = document.createElement('a'); a.href = u; a.download = 'demande-mutation-permutation.pdf'; a.click(); URL.revokeObjectURL(u); }}>{dl ? 'Génération…' : 'Télécharger le PDF'}</button></div></div>
         <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3 mt-4">
           <F k="destinataire" l="Destinataire" w="lg:col-span-3" /><F k="matricule" l="Votre matricule" /><F k="service" l="Votre service d'affectation (libellé complet)" /><F k="ville" l="Ville" /><F k="lieu" l="Fait à" />
         </div>
