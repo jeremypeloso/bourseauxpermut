@@ -6,6 +6,10 @@ import { supabaseBrowser } from '@/lib/supabase-browser';
 import Paywall from '@/components/Paywall';
 import ChoixAffectation, { Service } from '@/components/ChoixAffectation';
 
+// Hors du composant : définis à l'intérieur, React les remonterait à chaque rendu et perdrait l'état des sélecteurs
+const Fld = ({ l, children }: { l: string; children: React.ReactNode }) => <label className="block text-[12px] text-[#6F7789]">{l}{children}</label>;
+const Panel = ({ t, children, right }: { t: string; children: React.ReactNode; right?: React.ReactNode }) => <div className="bg-white border border-[#E6E9F0] rounded-2xl p-4 md:p-5 mb-3.5"><div className="flex justify-between items-center mb-2"><h4 className="text-[13px] font-extrabold text-navy">{t}</h4>{right}</div>{children}</div>;
+
 export default function FormDepot({ profil, souhaits, services, corps, grades, annonce }: any) {
   const r = useRouter(); const sb = supabaseBrowser();
   const [svcs, setSvcs] = useState<Service[]>(services);
@@ -34,8 +38,6 @@ export default function FormDepot({ profil, souhaits, services, corps, grades, a
     r.push(`/annonces/${j.id}`);
   };
   const retirer = async () => { await fetch('/api/annonces', { method: 'DELETE' }); r.push('/annonces'); };
-  const Fld = ({ l, children }: { l: string; children: React.ReactNode }) => <label className="block text-[12px] text-[#6F7789]">{l}{children}</label>;
-  const Panel = ({ t, children, right }: { t: string; children: React.ReactNode; right?: React.ReactNode }) => <div className="bg-white border border-[#E6E9F0] rounded-2xl p-4 md:p-5 mb-3.5"><div className="flex justify-between items-center mb-2"><h4 className="text-[13px] font-extrabold text-navy">{t}</h4>{right}</div>{children}</div>;
   const Opt = ({ k, t, s: sub, prix }: { k: typeof vis; t: string; s: string; prix: string }) => <button onClick={() => setVis(k)} className={`w-full flex gap-3 items-start text-left border-[1.5px] rounded-2xl p-3.5 mt-2 ${vis === k ? 'border-bleu bg-[#E6EEFF]' : 'border-[#E6E9F0] bg-white'}`}><span className="flex-1"><b className="block text-[14px] text-navy">{t}</b><small className="text-[12.5px] text-[#6F7789]">{sub}</small></span><b className="text-navy whitespace-nowrap">{prix}</b></button>;
 
   return (
