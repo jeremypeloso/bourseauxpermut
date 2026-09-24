@@ -19,7 +19,9 @@ export async function POST(req: NextRequest) {
   const { data: deja } = await admin.from('annonce_reponses').select('correspondance_id').eq('annonce_id', annonce_id).eq('profil_id', user.id).maybeSingle();
   if (deja) return NextResponse.json({ ok: true, correspondance_id: deja.correspondance_id, deja: true });
 
-  const signature = 'annonce:' + [user.id, a.profil_id].sort().join('|');
+  const signature = [user.id, a.profil_id].sort().join('|');
+  const { data: exist } = await admin.from('correspondances').select('id, statut').eq('signature', signature).maybeSingle();
+  if (exist) return NextResponse.json({ ok: true, correspondance_id: exist.id, existante: true });
   const { data: corr, error } = await admin.from('correspondances').insert({ institution: a.institution, type: 'directe', score: 70, statut: 'en_cours', signature, detail: { source: 'annonce', souhaits: 'proposition manuelle' } }).select('id').single();
   if (error || !corr) return NextResponse.json({ ok: false, message: 'Une proposition existe déjà entre vous deux.' }, { status: 409 });
   const now = new Date().toISOString();
