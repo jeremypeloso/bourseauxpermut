@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import AuthModal from './AuthModal';
 import CarteFrance from './CarteFrance';
 import CompteurLive from './CompteurLive';
@@ -16,16 +16,16 @@ const Ico = ({ d }: { d: string }) => <svg viewBox="0 0 24 24" className="w-6 h-
 const I = { clock: 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2', search: 'M11 17a6 6 0 1 0 0-12 6 6 0 0 0 0 12zM20 20l-4.5-4.5', eye: 'M12 5c-5 0-8.5 4-9.5 7 1 3 4.5 7 9.5 7s8.5-4 9.5-7c-1-3-4.5-7-9.5-7zM3 3l18 18', permut: 'M4 7h11l-3-3M20 17H9l3 3M4 17a2 2 0 1 0 0 .1M20 7a2 2 0 1 0 0 .1', list: 'M4 5h16v14H4zM8 9h8M8 13h5', trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13', lock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4', shield: 'M12 3l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V6zM9 12l2 2 4-4' };
 
 const ANN = [
-  ['GPX · CSP Nice → Toulouse, Montpellier ou Béziers', 'Sécurité publique · nuit 4/2 · 7 ans · départ mars 2027', 'Alpes-Maritimes (06) · il y a 2 h', 'Nice', 'Toulouse', true, '92 %'],
-  ['Gendarme · BTA Bayonne → Bretagne (29, 56, 35)', 'Brigade territoriale · 5 ans · logement en caserne libéré', 'Pyrénées-Atlantiques (64) · hier', 'Bayonne', 'Brest', false, null],
-  ['Surveillant · MA Fleury-Mérogis → Toulouse ou Bordeaux', 'Détention · 3 ans · SP · rapprochement de conjoint', 'Essonne (91) · hier', 'Fleury', 'Toulouse', false, '81 %'],
-  ['Brigadier · CRS 60 Montfavet → Lyon ou Grenoble', 'CRS · 9 ans · départ immédiat', 'Vaucluse (84) · il y a 3 j', 'Montfavet', 'Lyon', false, null],
-  ['GPX · DSPAP Paris 18e → La Réunion (CIMM)', 'SP jour · 6 ans · CIMM reconnu 974', 'Paris (75) · il y a 4 j', 'Paris', 'Réunion', false, '76 %'],
-  ['MDL/Chef · PSIG Lille → Toulouse ou Montpellier', 'PSIG · 8 ans · départ dès plan annuel', 'Nord (59) · il y a 5 j', 'Lille', 'Toulouse', false, null],
+  ['GPX · CSP Nice → Toulouse, Montpellier ou Béziers', 'Sécurité publique · nuit 4/2 · 7 ans · départ mars 2027', 'Alpes-Maritimes (06) · il y a 2 h', '06', ['31', '34'], true, '92 %'],
+  ['Gendarme · BTA Bayonne → Bretagne (29, 56, 35)', 'Brigade territoriale · 5 ans · logement en caserne libéré', 'Pyrénées-Atlantiques (64) · hier', '64', ['29', '56', '35'], false, null],
+  ['Surveillant · MA Fleury-Mérogis → Toulouse ou Bordeaux', 'Détention · 3 ans · SP · rapprochement de conjoint', 'Essonne (91) · hier', '91', ['31', '33'], false, '81 %'],
+  ['Brigadier · CRS 60 Montfavet → Lyon ou Grenoble', 'CRS · 9 ans · départ immédiat', 'Vaucluse (84) · il y a 3 j', '84', ['69', '38'], false, null],
+  ['GPX · DSPAP Paris 18e → La Réunion (CIMM)', 'SP jour · 6 ans · CIMM reconnu 974', 'Paris (75) · il y a 4 j', '75', ['974'], false, '76 %'],
+  ['MDL/Chef · PSIG Lille → Toulouse ou Montpellier', 'PSIG · 8 ans · départ dès plan annuel', 'Nord (59) · il y a 5 j', '59', ['31', '34'], false, null],
 ] as const;
 const Ann = ({ a, compact = false }: { a: typeof ANN[number]; compact?: boolean }) => (
   <div className={`grid gap-2.5 border border-[#E6E9F0] rounded-2xl bg-white ${compact ? 'grid-cols-[56px_1fr] p-2' : 'grid-cols-[64px_1fr] p-2.5'}`}>
-    <Vignette de={a[3]} vers={a[4]} className={compact ? 'w-14 h-10' : 'w-16 h-12'} />
+    <Vignette de={{ departement: a[3] }} vers={a[4].map(d => ({ departement: d }))} className={compact ? 'w-14 h-14 rounded-lg' : 'w-16 h-16 rounded-lg'} />
     <div className="min-w-0"><div className="flex gap-1 mb-0.5">{a[5] && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#FFF3D6] text-[#9A6A00]">Mise en avant</span>}{a[6] && <span className="text-[9px] font-bold px-1.5 py-0.5 rounded-full bg-[#DFF7EB] text-[#16804F]">Compatible {a[6]}</span>}</div><b className="block text-[12px] text-navy leading-tight">{a[0]}</b><span className="block text-[10.5px] text-[#3B4457]">{a[1]}</span><small className="text-[10px] text-[#A3AAB8]">{a[2]}</small></div>
   </div>
 );
@@ -33,6 +33,8 @@ const Ann = ({ a, compact = false }: { a: typeof ANN[number]; compact?: boolean 
 export default function Landing() {
   const [modal, setModal] = useState<null | 'signup' | 'login'>(null);
   const [menu, setMenu] = useState(false);
+  const [erreurLien, setErreurLien] = useState(false);
+  useEffect(() => { if (new URLSearchParams(location.search).get('erreur')?.startsWith('lien')) { setErreurLien(true); setModal('login'); } }, []);
   const Btn = ({ m, t, cls = '' }: { m: 'signup' | 'login'; t: string; cls?: string }) => <button onClick={() => setModal(m)} className={cls}>{t}</button>;
   const H2 = ({ t, light = false }: { t: string; light?: boolean }) => <h2 className={`text-[32px] md:text-[36px] font-extrabold tracking-[-1.3px] leading-[1.1] ${light ? 'text-white' : 'text-navy'}`}>{t}</h2>;
   const Center = ({ t, s }: { t: string; s: string }) => <div className="text-center max-w-[720px] mx-auto"><H2 t={t} /><p className="text-[16px] text-[#6F7789] mt-2.5">{s}</p></div>;
@@ -211,7 +213,7 @@ export default function Landing() {
         <div className="md:col-span-4 border-t border-white/10 pt-4 text-[12px] text-[#6F7789] text-center">© 2026 PELOSO CORPORATION · La Bourse aux permut&apos; · Hébergé en Europe · Aucun lien avec le ministère de l&apos;Intérieur ni le ministère de la Justice</div>
       </W></footer>
 
-      <AuthModal open={!!modal} initial={modal ?? 'signup'} onClose={() => setModal(null)} />
+      <AuthModal open={!!modal} initial={modal ?? 'signup'} onClose={() => setModal(null)} notice={erreurLien ? 'Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.' : undefined} />
     </div>
   );
 }

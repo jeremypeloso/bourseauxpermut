@@ -15,7 +15,7 @@ export async function GET(req: NextRequest) {
   if (!verifie) return NextResponse.json({ ok: true, verifie: false, premium, annonces: [], total: 0, en_clair: 0 });
 
   const p = req.nextUrl.searchParams;
-  const { data: rows } = await admin.from('annonces').select('*, services(ville, departement, outre_mer)').eq('institution', p.get('inst') || moi.institution).eq('statut', 'active').order('created_at', { ascending: false });
+  const { data: rows } = await admin.from('annonces').select('*, services(ville, departement, outre_mer, lat, lng)').eq('institution', p.get('inst') || moi.institution).eq('statut', 'active').order('created_at', { ascending: false });
   let liste: any[] = rows ?? [];
   const dep = p.get('departement'); const q = (p.get('q') ?? '').toLowerCase();
   if (dep) liste = liste.filter(a => (a.cibles ?? []).some((c: any) => c.departement === dep) || a.services?.departement === dep);
@@ -38,7 +38,7 @@ export async function POST(req: NextRequest) {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: 'non connecté' }, { status: 401 });
   const admin = supabaseAdmin();
-  const { data: p } = await admin.from('profils').select('institution, corps, grade, service_id, type_service, anciennete_poste_mois, depart_des, accepte_cycles, verifie_carte, verifie_mail_pro, souhaits(rang, service_id, departement, services(ville, departement))').eq('id', user.id).single();
+  const { data: p } = await admin.from('profils').select('institution, corps, grade, service_id, type_service, anciennete_poste_mois, depart_des, accepte_cycles, verifie_carte, verifie_mail_pro, souhaits(rang, service_id, departement, services(ville, departement, lat, lng))').eq('id', user.id).single();
   if (!p || !(p.verifie_carte || p.verifie_mail_pro)) return NextResponse.json({ ok: false, message: 'Compte non vérifié.' }, { status: 403 });
   if (!p.service_id || !(p.souhaits ?? []).length) return NextResponse.json({ ok: false, message: 'Renseignez votre affectation et au moins un souhait.' }, { status: 400 });
   const cibles = (p.souhaits as any[]).sort((a, b) => a.rang - b.rang).map(s => ({ service_id: s.service_id, ville: s.services?.ville ?? null, departement: s.departement ?? s.services?.departement ?? null }));

@@ -8,7 +8,7 @@ export async function GET() {
   const user = await currentUser();
   if (!user) return NextResponse.json({ error: 'non connecté' }, { status: 401 });
   const admin = supabaseAdmin();
-  const { data } = await admin.from('favoris').select('annonce_id, annonces(*, services(ville, departement))').eq('profil_id', user.id).order('created_at', { ascending: false });
+  const { data } = await admin.from('favoris').select('annonce_id, annonces(*, services(ville, departement, lat, lng))').eq('profil_id', user.id).order('created_at', { ascending: false });
   return NextResponse.json({ ok: true, annonces: (data ?? []).map((f: any) => f.annonces).filter((a: any) => a && a.statut === 'active').map(entete) });
 }
 /** POST { annonce_id } → bascule. */

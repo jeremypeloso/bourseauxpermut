@@ -2,7 +2,8 @@ import { supabaseAdmin } from '@/lib/supabase-server';
 
 export const estBoost = (a: any) => !!a.mise_en_avant_jusqua && new Date(a.mise_en_avant_jusqua) > new Date();
 export const entete = (a: any) => ({
-  id: a.id, grade: a.grade, institution: a.institution, ville: a.services?.ville ?? null, departement: a.services?.departement ?? null,
+  id: a.id, grade: a.grade, institution: a.institution, ville: a.services?.ville ?? null, departement: a.services?.departement ?? null, lat: a.services?.lat ?? null, lng: a.services?.lng ?? null,
+  cibles_geo: (a.cibles ?? []).slice(0, 3).map((c: any) => ({ ville: c.ville ?? null, departement: c.departement ?? null })),
   cibles_villes: (a.cibles ?? []).map((c: any) => c.ville ?? c.departement).filter(Boolean).slice(0, 3),
   mise_en_avant: estBoost(a), created_at: a.created_at, flou: true, demo: !!a.demo,
 });
