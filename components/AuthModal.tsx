@@ -7,7 +7,7 @@ type Mode = 'signup' | 'login' | 'oubli';
  * Inscription : email personnel obligatoire → lien de confirmation → onboarding (carte pro OU code mail pro)
  * → définition du mot de passe. Connexion ensuite : email perso + mot de passe.
  */
-export default function AuthModal({ open, initial, onClose }: { open: boolean; initial: Mode; onClose: () => void }) {
+export default function AuthModal({ open, initial, onClose, notice }: { open: boolean; initial: Mode; onClose: () => void; notice?: string }) {
   const [mode, setMode] = useState<Mode>(initial);
   const [voie, setVoie] = useState<1 | 2>(1);
   const [email, setEmail] = useState('');
@@ -44,6 +44,7 @@ export default function AuthModal({ open, initial, onClose }: { open: boolean; i
       <div className="bg-white rounded-3xl w-[920px] max-w-full p-7 relative max-h-[92vh] overflow-y-auto">
         <button className="absolute right-4 top-3 text-2xl text-[#A3AAB8]" onClick={onClose}>×</button>
         <div className="flex gap-1.5"><Tab m="signup" t="Créer mon compte" /><Tab m="login" t="Connexion" /></div>
+        {notice && <p className="mt-3 text-[13px] text-[#9A6A00] bg-[#FFF3D6] rounded-xl px-3 py-2">{notice}</p>}
 
         {envoye ? (
           <div className="mt-6 text-center py-8"><b className="text-navy text-lg">Lien envoyé sur {email}</b><p className="sub mt-2">{mode === 'oubli' ? 'Ouvrez-le pour choisir un nouveau mot de passe.' : 'Ouvrez-le depuis l\'appareil sur lequel vous voulez utiliser le site. La vérification puis le choix du mot de passe suivent.'}</p></div>
