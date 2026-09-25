@@ -210,7 +210,7 @@ export default function Landing() {
         <div><h5 className="text-white font-bold mb-2">Navigation</h5>{[['#services', 'Fonctionnalités'], ['#tarifs', 'Tarifs'], ['#contact', 'Contact']].map(([h, t]) => <a key={h} href={h} className="block py-1">{t}</a>)}</div>
         <div><h5 className="text-white font-bold mb-2">Légal</h5>{[['/legal/confidentialite', 'Politique de confidentialité'], ['/legal/cgv', 'Conditions générales'], ['/legal/mentions-legales', 'Mentions légales'], ['/legal/confidentialite#7-vos-droits', 'Gérer mes données']].map(([h, t]) => <a key={h} href={h} className="block py-1">{t}</a>)}</div>
         <div><h5 className="text-white font-bold mb-2">Contact</h5><a href="mailto:contact@labourseauxpermut.fr" className="block py-1">contact@labourseauxpermut.fr</a><a href="#contact" className="block py-1">Signaler une annonce</a></div>
-        <div className="md:col-span-4 border-t border-white/10 pt-4 text-[12px] text-[#6F7789] text-center">© 2026 PELOSO CORPORATION · La Bourse aux permut&apos; · Hébergé en Europe · Aucun lien avec le ministère de l&apos;Intérieur ni le ministère de la Justice</div>
+        <div className="md:col-span-4 border-t border-white/10 pt-4 text-[12px] text-[#6F7789] text-center">© 2026 La Bourse aux permut&apos; · Hébergé en Europe · Aucun lien avec le ministère de l&apos;Intérieur ni le ministère de la Justice</div>
       </W></footer>
 
       <AuthModal open={!!modal} initial={modal ?? 'signup'} onClose={() => setModal(null)} notice={erreurLien ? 'Ce lien a expiré ou a déjà été utilisé. Demandez-en un nouveau.' : undefined} />

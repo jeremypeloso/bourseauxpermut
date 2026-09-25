@@ -4,7 +4,7 @@
 
 ## 1. Objet
 
-Les présentes conditions régissent l'utilisation du site labourseauxpermut.fr (le « Site »), édité par PELOSO CORPORATION (l'« Éditeur »), par toute personne créant un compte (le « Membre »). La création d'un compte vaut acceptation.
+Les présentes conditions régissent l'utilisation du site labourseauxpermut.fr (le « Site »), édité par Jérémy Peloso, via la société PELOSO CORPORATION (l'« Éditeur »), par toute personne créant un compte (le « Membre »). La création d'un compte vaut acceptation.
 
 ## 2. Qui peut s'inscrire
 

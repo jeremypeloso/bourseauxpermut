@@ -6,7 +6,7 @@ La discrétion est la raison d'être de La Bourse aux permut'. Cette politique d
 
 ## 1. Responsable du traitement
 
-PELOSO CORPORATION, SIREN 933 210 296, [adresse à compléter]. Contact pour toute question relative à vos données : **contact@labourseauxpermut.fr**.
+Jérémy Peloso, éditeur de La Bourse aux permut'. Contact pour toute question relative à vos données : **contact@labourseauxpermut.fr**.
 
 ## 2. Ce que nous ne faisons jamais
 

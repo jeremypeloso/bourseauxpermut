@@ -6,11 +6,9 @@
 
 Le site **labourseauxpermut.fr** (ci-après « le Site ») est édité par :
 
-**PELOSO CORPORATION**, société par actions simplifiée
-SIREN 933 210 296
-Siège social : [adresse complète à compléter]
+**Jérémy Peloso**, via la société PELOSO CORPORATION (SIREN 933 210 296)
 Email : contact@labourseauxpermut.fr
-Directeur de la publication : Jérémy Peloso, président
+Directeur de la publication : Jérémy Peloso
 
 ## Hébergement
 
