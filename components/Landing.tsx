@@ -9,6 +9,28 @@ import Compteur from './Compteur';
 import BarreChiffres from './BarreChiffres';
 
 const PRELAUNCH = process.env.NEXT_PUBLIC_PRELAUNCH === '1';
+
+/** Formulaire de contact : envoi par le serveur (Resend), confirmation à l'écran. */
+function FormContact() {
+  const [f, setF] = useState({ institution: 'Police nationale', email: '', message: '', piege: '' });
+  const [etat, setEtat] = useState<'idle' | 'busy' | 'ok' | 'err'>('idle'); const [err, setErr] = useState('');
+  const envoyer = async () => {
+    setEtat('busy'); setErr('');
+    const j = await fetch('/api/message', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(f) }).then(r => r.json()).catch(() => ({ ok: false, message: 'Réseau indisponible.' }));
+    if (j.ok) setEtat('ok'); else { setEtat('err'); setErr(j.message ?? 'Erreur'); }
+  };
+  if (etat === 'ok') return <div className="max-w-[640px] mx-auto mt-9 bg-[#DFF7EB] border border-[#CDEFDC] rounded-3xl p-6 text-center"><b className="text-[#16804F] text-[16px]">Message envoyé.</b><p className="text-[13.5px] text-[#3B4457] mt-1">{f.email ? 'Réponse sur votre adresse sous 48 h.' : 'Sans adresse, pas de réponse possible, mais le message est bien lu.'}</p></div>;
+  return (
+    <div className="max-w-[640px] mx-auto mt-9 bg-white border border-[#E6E9F0] rounded-3xl p-6">
+      <label className="block text-[12px] text-[#6F7789]">Institution<select className="field mt-1" value={f.institution} onChange={e => setF({ ...f, institution: e.target.value })}><option>Police nationale</option><option>Gendarmerie nationale (ouverture prochaine)</option><option>Administration pénitentiaire (ouverture prochaine)</option><option>Autre</option></select></label>
+      <label className="block text-[12px] text-[#6F7789] mt-3">Email (facultatif, pour la réponse)<input type="email" className="field mt-1" placeholder="vous@exemple.fr" value={f.email} onChange={e => setF({ ...f, email: e.target.value })} /></label>
+      <label className="block text-[12px] text-[#6F7789] mt-3">Message<textarea rows={5} className="field mt-1" placeholder="Une idée, un bug, une remarque… Ne mettez ni nom, ni service, ni matricule." value={f.message} onChange={e => setF({ ...f, message: e.target.value })} maxLength={2000} /></label>
+      <input className="hidden" tabIndex={-1} autoComplete="off" value={f.piege} onChange={e => setF({ ...f, piege: e.target.value })} aria-hidden />
+      {etat === 'err' && <p className="text-coral text-[12.5px] mt-2">{err}</p>}
+      <button className="btn mt-4" onClick={envoyer} disabled={etat === 'busy' || f.message.trim().length < 10}>{etat === 'busy' ? 'Envoi…' : 'Envoyer'}</button>
+    </div>
+  );
+}
 const OUVERTURE = process.env.NEXT_PUBLIC_OUVERTURE || '2026-10-23T08:00:00+02:00';
 const OFFRE_LANCEMENT = process.env.NEXT_PUBLIC_OFFRE_LANCEMENT !== '0';
 const OUVERTURE_TXT = new Date(OUVERTURE).toLocaleDateString('fr-FR', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
@@ -190,12 +212,7 @@ export default function Landing() {
       {/* CONTACT */}
       <section id="contact" className="py-20"><W>
         <Center t="Une question, une idée ?" s="Le site est fait par un ancien collègue. Il lit tout." />
-        <form className="max-w-[640px] mx-auto mt-9 bg-white border border-[#E6E9F0] rounded-3xl p-6" onSubmit={e => { e.preventDefault(); location.href = `mailto:contact@labourseauxpermut.fr?subject=${encodeURIComponent('Suggestion')}`; }}>
-          <label className="block text-[12px] text-[#6F7789]">Institution<select className="field mt-1"><option>Police nationale</option><option>Gendarmerie nationale (ouverture prochaine)</option><option>Administration pénitentiaire (ouverture prochaine)</option><option>Autre</option></select></label>
-          <label className="block text-[12px] text-[#6F7789] mt-3">Email (facultatif, pour la réponse)<input type="email" className="field mt-1" placeholder="vous@exemple.fr" /></label>
-          <label className="block text-[12px] text-[#6F7789] mt-3">Message<textarea rows={5} className="field mt-1" placeholder="Une idée, un bug, une remarque… Ne mettez ni nom, ni service, ni matricule." /></label>
-          <button className="btn mt-4">Envoyer</button>
-        </form>
+        <FormContact />
       </W></section>
 
       {/* CTA */}
