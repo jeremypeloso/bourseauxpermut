@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Bouton } from '../Actions';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export default async function Parametres() {
   const a = supabaseAdmin();
   const { data: inst } = await a.from('institutions').select('code, libelle, ouverte').order('code');

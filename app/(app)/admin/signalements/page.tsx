@@ -3,6 +3,7 @@ import { Bouton } from '../Actions';
 import { Table, d, Pill } from '../Table';
 import Link from 'next/link';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 const MOTIFS: Record<string, string> = { identifiante: 'Identifiante', hors_sujet: 'Hors sujet', doublon: 'Doublon', autre: 'Autre' };
 export default async function Signalements() {
   const a = supabaseAdmin();

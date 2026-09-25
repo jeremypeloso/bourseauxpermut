@@ -1,6 +1,7 @@
 import { supabaseAdmin } from '@/lib/supabase-server';
 import { Table } from '../Table';
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 export default async function Journal() {
   const a = supabaseAdmin();
   const { data: rows } = await a.from('journal_identites').select('id, profil_id, par_fonction, correspondance_id, created_at').order('created_at', { ascending: false }).limit(300);

@@ -3,6 +3,7 @@ import { Bouton } from '../Actions';
 import { Table, d, Pill } from '../Table';
 
 export const dynamic = 'force-dynamic';
+export const revalidate = 0;
 
 export default async function Pre() {
   const a = supabaseAdmin();
