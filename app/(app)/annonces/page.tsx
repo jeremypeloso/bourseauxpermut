@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import AnnonceCard from '@/components/AnnonceCard';
 import Paywall from '@/components/Paywall';
+import { useDialog } from '@/components/Dialog';
 
 function Filtres({ onChange }: { onChange: (k: string, v: string) => void }) {
   const sp = useSearchParams();
@@ -30,15 +31,15 @@ function Liste() {
   const [data, setData] = useState<any>(null);
   const [pay, setPay] = useState(false);
   const [filtres, setFiltres] = useState(false);
-  const [msg, setMsg] = useState<string | null>(null);
+  const { notifier } = useDialog();
 
   useEffect(() => { fetch(`/api/annonces?${sp.toString()}`).then(x => x.json()).then(j => setData({ annonces: [], total: 0, en_clair: 0, ...j })).catch(e => setData({ ok: false, error: e.message, annonces: [] })); }, [sp]);
   const setParam = (k: string, v: string) => { const n = new URLSearchParams(sp.toString()); v ? n.set(k, v) : n.delete(k); r.push(`/annonces?${n.toString()}`); };
-  const favori = async (id: string) => { const j = await fetch('/api/favoris', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ annonce_id: id }) }).then(x => x.json()); setMsg(j.favori ? 'Annonce sauvegardée' : 'Retirée des favoris'); setTimeout(() => setMsg(null), 1500); };
+  const favori = async (id: string) => { const j = await fetch('/api/favoris', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ annonce_id: id }) }).then(x => x.json()); notifier(j.favori ? 'Annonce sauvegardée' : 'Retirée des favoris'); };
   const proposer = async (id: string) => {
     const res = await fetch('/api/annonces/repondre', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ annonce_id: id }) });
     if (res.status === 402) return setPay(true);
-    const j = await res.json(); if (j.ok) r.push(`/matchs/${j.correspondance_id}`); else { setMsg(j.message ?? j.error); setTimeout(() => setMsg(null), 2500); }
+    const j = await res.json(); if (j.ok) r.push(`/matchs/${j.correspondance_id}`); else notifier(j.message ?? j.error, 'erreur');
   };
   const annonces: any[] = data?.annonces ?? []; const total = data?.total ?? 0; const enClair = data?.en_clair ?? 0;
   const nbMatchs = 0;
@@ -68,7 +69,6 @@ function Liste() {
           {data?.ok && data.verifie && annonces.length === 0 && <div className="card"><b className="text-navy">Aucune annonce pour ces critères</b><div className="sub mt-1">Élargissez les filtres, ou <Link href="/deposer" className="text-bleu font-semibold">déposez la vôtre</Link> : c&apos;est gratuit et anonyme.</div></div>}
         </div>
       </div>
-      {msg && <div className="fixed left-1/2 -translate-x-1/2 bottom-24 md:bottom-7 bg-navy text-white text-[13px] font-semibold px-4 py-3 rounded-xl z-50">{msg}</div>}
       <Paywall open={pay} onClose={() => setPay(false)} />
     </div>
   );
