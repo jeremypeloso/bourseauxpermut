@@ -8,11 +8,12 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const user = await currentUser();
   if (!user) redirect('/');
   const sb = supabaseServer();
-  const { data: profil } = await sb.from('profils').select('institution').eq('id', user.id).maybeSingle();
+  const [{ data: profil }, { data: m }] = await Promise.all([
+    sb.from('profils').select('institution').eq('id', user.id).maybeSingle(),
+    sb.from('v_mes_correspondances').select('id').eq('est_moi', true).eq('reponse', 'attente').neq('statut', 'refusee'),
+  ]);
   // Pas encore de profil (compte tout juste créé ou session d'un ancien compte) : l'onboarding d'abord
   if (!profil) redirect('/onboarding');
-  // Pastille : correspondances ouvertes où ma réponse est attendue
-  const { data: m } = await sb.from('v_mes_correspondances').select('id').eq('est_moi', true).eq('reponse', 'attente').neq('statut', 'refusee');
   return (
     <DialogProvider>
     <div className="min-h-screen bg-[#F4F6FA] pb-20 md:pb-0">

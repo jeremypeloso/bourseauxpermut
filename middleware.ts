@@ -21,7 +21,9 @@ export async function middleware(req: NextRequest) {
         setAll: (list: { name: string; value: string; options?: any }[]) => list.forEach(({ name, value, options }) => res.cookies.set(name, value, options)),
       },
     });
-    const { data: { user } } = await supabase.auth.getUser();
+    // Lecture locale du jeton (pas d'aller-retour vers Supabase) : suffisant pour router ; les pages revérifient réellement
+    const { data: { session } } = await supabase.auth.getSession();
+    const user = session?.user ?? null;
     if (PRELAUNCH && !user && path === '/login') return NextResponse.redirect(new URL('/', base));
     if (!user && !estPublic(path)) return NextResponse.redirect(new URL('/', base));
     return res;

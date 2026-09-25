@@ -1,4 +1,5 @@
 {
+  "regions": ["cdg1"],
   "crons": [{ "path": "/api/cron/matching", "schedule": "0 6 * * *" }],
   "functions": { "app/api/verify/card/route.ts": { "maxDuration": 60 } }
 }

@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { createClient } from '@supabase/supabase-js';
 import { cookies } from 'next/headers';
+import { cache } from 'react';
 
 /** Client lié à la session de l'utilisateur (RLS actif). */
 export function supabaseServer() {
@@ -26,7 +27,7 @@ export function supabaseAdmin() {
   });
 }
 
-export async function currentUser() {
+export const currentUser = cache(async function currentUser() {
   const { data } = await supabaseServer().auth.getUser();
   return data.user;
-}
+});
