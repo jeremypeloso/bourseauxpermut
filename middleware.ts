@@ -1,7 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextRequest, NextResponse } from 'next/server';
 
-const PUBLIC = ['/', '/login', '/auth', '/legal', '/api/stripe/webhook', '/api/cron', '/api/preinscription'];
+const PUBLIC = ['/', '/login', '/auth', '/legal', '/api/stripe/webhook', '/api/cron', '/api/preinscription', '/api/notif'];
 const PRELAUNCH = process.env.NEXT_PUBLIC_PRELAUNCH === '1';
 const estPublic = (path: string) => PUBLIC.some(p => path === p || path.startsWith(p + '/'));
 
