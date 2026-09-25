@@ -11,6 +11,7 @@ export default function Detail() {
   const [pay, setPay] = useState(false);
   const [fav, setFav] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
+  const [sig, setSig] = useState<null | 'form' | 'ok'>(null); const [motif, setMotif] = useState('identifiante'); const [com, setCom] = useState('');
   useEffect(() => { fetch(`/api/annonces/${id}`).then(x => x.json()).then(j => { setD(j); setFav(!!j.favori); }); }, [id]);
   const a = d?.annonce;
   const favori = async () => { const j = await fetch('/api/favoris', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ annonce_id: id }) }).then(x => x.json()); setFav(j.favori); };
@@ -61,7 +62,11 @@ export default function Detail() {
           {msg && <p className="sub mt-2">{msg}</p>}
         </div>
         {!a.mienne && !a.flou && a.score >= 70 && <Link href="/matchs" className="block rounded-2xl p-4 text-white bg-gradient-to-br from-navy2 to-navy"><b className="block text-[14px]">Compatible avec vos souhaits</b><span className="text-[12px] text-[#A9B7D6]">Le matching automatique peut aussi la placer dans un cycle à 3 ou 4.</span><span className="block text-[13px] font-bold mt-3 bg-white text-navy rounded-xl px-3 py-2.5 text-center">Voir mes matchs</span></Link>}
-        <div className="bg-white border border-[#E6E9F0] rounded-2xl p-4"><b className="text-[13px] text-navy">Signaler</b><div className="sub mt-1">Annonce identifiante ou hors sujet ? <a href="mailto:contact@labourseauxpermut.fr" className="text-bleu font-semibold">Écrivez-nous</a>, elle sera retirée sous 24 h.</div></div>
+        <div className="bg-white border border-[#E6E9F0] rounded-2xl p-4"><b className="text-[13px] text-navy">Signaler</b>
+          {sig === 'ok' ? <div className="sub mt-1 text-[#16804F]">Merci, le signalement est transmis. Examen sous 24 h.</div> : sig === 'form' ? (
+            <div className="mt-2 grid gap-2"><select className="field !py-2" value={motif} onChange={e => setMotif(e.target.value)}><option value="identifiante">Elle permet d'identifier quelqu'un</option><option value="hors_sujet">Hors sujet</option><option value="doublon">Doublon</option><option value="autre">Autre</option></select><input className="field !py-2" placeholder="Précision (facultatif)" value={com} onChange={e => setCom(e.target.value)} maxLength={300} /><div className="flex gap-2"><button className="btn !w-auto !py-2 px-3.5 text-[13px]" onClick={async () => { const j = await fetch('/api/signalement', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ annonce_id: id, motif, commentaire: com }) }).then(r => r.json()); if (j.ok) setSig('ok'); else setMsg(j.message); }}>Envoyer</button><button className="btn-ghost !w-auto !py-2 px-3.5 text-[13px]" onClick={() => setSig(null)}>Annuler</button></div></div>
+          ) : <div className="sub mt-1">Annonce identifiante ou hors sujet ? <button className="text-bleu font-semibold" onClick={() => setSig('form')}>Signaler</button>, elle sera examinée sous 24 h.</div>}
+        </div>
       </aside>
       <Paywall open={pay} onClose={() => setPay(false)} />
     </div>
