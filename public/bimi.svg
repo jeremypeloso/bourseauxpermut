@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" version="1.2" baseProfile="tiny-ps" viewBox="0 0 780 780">
+  <title>La Bourse aux permut</title>
+  <rect width="780" height="780" fill="#FFFFFF"/>
+  <g transform="translate(103 126)">
+    <path d="M318 7 L304 3 L56 3 L42 6 L30 12 L15 26 L7 40 L3 59 L3 290 L5 303 L10 315 L25 333 L39 341 L55 345 L178 345 L184 340 L185 213 L188 203 L195 192 L206 183 L221 178 L323 177 L333 172 L345 158 L348 147 L348 46 L345 35 L339 24 L327 12 Z" fill="#1E6BFF" fill-rule="evenodd"/>
+    <path d="M222 231 L218 246 L219 381 L222 392 L231 407 L238 414 L251 422 L267 426 L517 426 L532 422 L542 417 L557 403 L564 391 L568 375 L568 161 L564 145 L557 133 L545 121 L531 113 L515 109 L388 109 L384 111 L380 117 L379 175 L372 191 L359 204 L347 210 L337 212 L248 212 L233 218 Z" fill="#0F1B33" fill-rule="evenodd"/>
+  </g>
+</svg>
