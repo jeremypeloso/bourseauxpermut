@@ -10,7 +10,8 @@ const Ico = ({ d, cls = 'w-5 h-5' }: { d: string; cls?: string }) => <svg viewBo
 const I = { list: 'M4 5h16v14H4zM8 9h8M8 13h5', shield: 'M12 3l8 3v6c0 5-3.5 9-8 11-4.5-2-8-6-8-11V6zM9 12l2 2 4-4', star: 'M12 3l2.8 5.7 6.2.9-4.5 4.4 1 6.2L12 17.3 6.5 20.2l1-6.2L3 9.6l6.2-.9z', user: 'M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0', lock: 'M5 11h14v10H5zM8 11V7a4 4 0 0 1 8 0v4', trash: 'M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13', check: 'M5 12l4 4L19 6', x: 'M6 6l12 12M18 6L6 18' };
 
 export default function Compte({ email, profil, gradeLibelle, souhaits, annonce, nbMatchs }: any) {
-  const sb = supabaseBrowser(); const [pay, setPay] = useState(false); const [busy, setBusy] = useState(false);
+  const sb = supabaseBrowser(); const [pay, setPay] = useState(false); const [busy, setBusy] = useState(false); const [boostMsg, setBoostMsg] = useState<string | null>(null);
+  const booster = async () => { setBusy(true); setBoostMsg(null); const j = await fetch('/api/stripe/boost', { method: 'POST' }).then(r => r.json()).catch(() => ({ message: 'Paiement indisponible.' })); if (j.url) return (location.href = j.url); setBusy(false); setBoostMsg(j.message ?? j.error ?? 'Paiement indisponible.'); };
   const premium = !!profil?.premium_jusqua && new Date(profil.premium_jusqua) > new Date();
   const verifie = !!(profil?.verifie_carte || profil?.verifie_mail_pro); const deux = !!(profil?.verifie_carte && profil?.verifie_mail_pro);
   const boost = !!annonce?.mise_en_avant_jusqua && new Date(annonce.mise_en_avant_jusqua) > new Date();
@@ -69,9 +70,10 @@ export default function Compte({ email, profil, gradeLibelle, souhaits, annonce,
                 </div>
                 <div className="flex flex-wrap items-center gap-3 mt-4 text-[13px]">
                   <span className={boost ? 'pill-amber' : 'pill bg-paper text-[#6F7789]'}>{boost ? `Mise en avant jusqu'au ${new Date(annonce.mise_en_avant_jusqua).toLocaleDateString('fr-FR')}` : premium ? 'Mise en avant permanente (Premium)' : 'Sans mise en avant'}</span>
-                  {!boost && !premium && <Link href="/deposer" className="text-bleu font-semibold">Mettre en avant 7 jours · 4,99 €</Link>}
+                  {!boost && !premium && <button onClick={booster} disabled={busy} className="inline-flex items-center gap-2 bg-[#FFF3D6] text-[#9A6A00] border border-[#F2A900]/40 rounded-xl px-3.5 py-2 font-bold hover:bg-[#FFE9B3] disabled:opacity-60">{busy ? 'Redirection…' : '⚡ Mettre en avant 7 jours · 4,99 €'}</button>}
                   <button onClick={retirer} disabled={busy} className="ml-auto text-[#C8323B] font-semibold">Retirer l&apos;annonce</button>
                 </div>
+                {boostMsg && <p className="text-[12.5px] text-coral mt-2">{boostMsg}</p>}
               </>
             ) : null}
           </Section>
