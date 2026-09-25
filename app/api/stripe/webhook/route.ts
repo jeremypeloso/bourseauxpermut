@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import Stripe from 'stripe';
 import { stripe } from '@/lib/stripe';
+import { mailAdmin } from '@/lib/email';
 import { supabaseAdmin } from '@/lib/supabase-server';
 
 export const runtime = 'nodejs';
@@ -21,8 +22,9 @@ export async function POST(req: NextRequest) {
       await majPremium(s.customer as string, ['active', 'trialing', 'past_due'].includes(s.status) ? s.current_period_end : null);
       break;
     }
-    case 'customer.subscription.deleted': { const s = event.data.object as Stripe.Subscription; await majPremium(s.customer as string, null); break; }
+    case 'customer.subscription.deleted': { const s = event.data.object as Stripe.Subscription; await majPremium(s.customer as string, null); try { await mailAdmin('Abonnement Premium résilié', ['Un abonnement est arrivé à son terme ou a été annulé.']); } catch {} break; }
     case 'checkout.session.completed': {
+      { const cs: any = event.data.object; try { await mailAdmin(cs.mode === 'subscription' ? 'Nouvel abonnement Premium' : 'Mise en avant payée', [`Montant : ${((cs.amount_total ?? 0) / 100).toFixed(2).replace('.', ',')} €`]); } catch {} }
       const s = event.data.object as Stripe.Checkout.Session;
       if (s.metadata?.type === 'boost' && s.metadata.annonce_id) {
         await admin.from('annonces').update({ mise_en_avant_jusqua: new Date(Date.now() + 7 * 86400e3).toISOString() }).eq('id', s.metadata.annonce_id);

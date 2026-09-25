@@ -43,3 +43,11 @@ export async function mailAVousDeRepondre(to: string) {
 export async function mailCycleFerme(to: string, raison?: string) {
   await resend().emails.send({ from: process.env.EMAIL_FROM!, to, subject: 'Une correspondance s\'est refermée', html: gabarit('Une correspondance s\'est refermée', `Un des agents a décliné${raison ? ` (${raison})` : ''}. Cette correspondance est close, sans suite pour vous. Le rapprochement continue toutes les heures avec vos souhaits.`, 'Voir mes matchs', `${SITE()}/matchs`) });
 }
+
+/** Notification administrateur (ADMIN_NOTIF_EMAIL, sinon premier ADMIN_EMAILS). Jamais de donnée identifiante d'agent dedans. */
+export async function mailAdmin(sujet: string, lignes: string[]) {
+  const to = process.env.ADMIN_NOTIF_EMAIL || (process.env.ADMIN_EMAILS || '').split(',')[0]?.trim();
+  if (!to || !process.env.RESEND_API_KEY) return;
+  const site = SITE();
+  await resend().emails.send({ from: process.env.EMAIL_FROM!, to, subject: `[Admin] ${sujet}`, html: `<div style="font-family:-apple-system,Segoe UI,Helvetica,Arial,sans-serif;max-width:520px;margin:0 auto;padding:24px;color:#141A26"><p style="font-size:11px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;color:#1E6BFF;margin:0 0 8px">La Bourse aux permut' · admin</p><h2 style="font-size:18px;margin:0 0 12px;color:#0F1B33">${sujet}</h2>${lignes.map(l => `<p style="font-size:14px;margin:4px 0">${l}</p>`).join('')}<p style="margin-top:16px"><a href="${site}/admin" style="color:#1E6BFF;font-weight:700">Ouvrir l'admin</a></p></div>` });
+}
