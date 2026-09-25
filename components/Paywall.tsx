@@ -2,12 +2,12 @@
 import { useState } from 'react';
 
 export default function Paywall({ open, onClose }: { open: boolean; onClose: () => void }) {
-  const [busy, setBusy] = useState(false);
+  const [busy, setBusy] = useState(false); const [err, setErr] = useState<string | null>(null);
   if (!open) return null;
   const go = async () => {
-    setBusy(true);
-    const { url } = await fetch('/api/stripe/checkout', { method: 'POST' }).then(r => r.json());
-    if (url) location.href = url; else setBusy(false);
+    setBusy(true); setErr(null);
+    const j = await fetch('/api/stripe/checkout', { method: 'POST' }).then(r => r.json()).catch(() => ({ message: 'Paiement indisponible (réponse serveur invalide).' }));
+    if (j.url) location.href = j.url; else { setBusy(false); setErr(j.message ?? j.error ?? 'Paiement indisponible.'); }
   };
   return (
     <div className="fixed inset-0 z-50 bg-navy/60 backdrop-blur-sm flex items-end md:items-center justify-center md:p-6" onClick={e => e.target === e.currentTarget && onClose()}>
@@ -21,6 +21,7 @@ export default function Paywall({ open, onClose }: { open: boolean; onClose: () 
             {['Toutes les annonces en clair, réponses illimitées', 'Votre annonce mise en avant en permanence', 'Matching prioritaire, alertes immédiates', 'Mise en relation illimitée', 'Courriers de permutation prêts à signer'].map(t => <li key={t} className="flex gap-2"><span className="text-[#8FF0C0]">✓</span>{t}</li>)}
           </ul>
           <button className="btn mt-4" onClick={go} disabled={busy}>{busy ? 'Redirection…' : 'Passer en Premium'}</button>
+          {err && <p className="text-[12.5px] text-[#FFB4B8] mt-2 text-center">{err}</p>}
           <p className="text-center text-[11px] text-[#A9B7D6] mt-2">Sans engagement, sans période d&apos;essai. Résiliable en un geste dès votre mutation obtenue.</p>
         </div>
         <button className="btn-ghost mt-3" onClick={onClose}>Plus tard</button>

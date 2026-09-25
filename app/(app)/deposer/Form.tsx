@@ -33,7 +33,7 @@ export default function FormDepot({ profil, souhaits, services, corps, grades, a
     const j = await fetch('/api/annonces', { method: 'POST' }).then(x => x.json());
     setBusy(false);
     if (!j.ok) return setMsg(j.message ?? j.error);
-    if (vis === 'boost') { const b = await fetch('/api/stripe/boost', { method: 'POST' }).then(x => x.json()); if (b.url) return (location.href = b.url); }
+    if (vis === 'boost') { const b = await fetch('/api/stripe/boost', { method: 'POST' }).then(x => x.json()).catch(() => ({ message: 'Paiement indisponible (réponse serveur invalide).' })); if (b.url) return (location.href = b.url); return setMsg(b.message ?? b.error ?? 'Paiement indisponible.'); }
     if (vis === 'premium') return setPay(true);
     r.push(`/annonces/${j.id}`);
   };
