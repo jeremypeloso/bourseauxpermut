@@ -7,7 +7,7 @@ export default async function Parametres() {
   const { data: inst } = await a.from('institutions').select('code, libelle, ouverte').order('code');
   const { data: stats } = await a.from('stats_publiques').select('cle, valeur, maj');
   const { data: demo } = await a.from('annonces').select('id').eq('demo', true);
-  const env = [['NEXT_PUBLIC_PRELAUNCH', process.env.NEXT_PUBLIC_PRELAUNCH ?? '0'], ['NEXT_PUBLIC_OFFRE_LANCEMENT', process.env.NEXT_PUBLIC_OFFRE_LANCEMENT ?? '1'], ['NEXT_PUBLIC_INSTITUTIONS', process.env.NEXT_PUBLIC_INSTITUTIONS ?? 'PN'], ['NEXT_PUBLIC_OUVERTURE', process.env.NEXT_PUBLIC_OUVERTURE ?? '—'], ['ADMIN_EMAILS', (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.replace(/(.{2}).+(@.+)/, '$1…$2')).join(', ')], ['Stripe', process.env.STRIPE_SECRET_KEY?.startsWith('sk_live') ? 'live' : process.env.STRIPE_SECRET_KEY ? 'test' : 'absent'], ['Resend', process.env.RESEND_API_KEY ? 'configuré' : 'absent']];
+  const env = [['NEXT_PUBLIC_PRELAUNCH', process.env.NEXT_PUBLIC_PRELAUNCH ?? '0'], ['NEXT_PUBLIC_OFFRE_LANCEMENT', process.env.NEXT_PUBLIC_OFFRE_LANCEMENT ?? '1'], ['NEXT_PUBLIC_INSTITUTIONS', process.env.NEXT_PUBLIC_INSTITUTIONS ?? 'PN'], ['NEXT_PUBLIC_OUVERTURE', process.env.NEXT_PUBLIC_OUVERTURE ?? '—'], ['ADMIN_EMAILS', (process.env.ADMIN_EMAILS ?? '').split(',').map(e => e.replace(/(.{2}).+(@.+)/, '$1…$2')).join(', ')], ['Stripe', process.env.STRIPE_SECRET_KEY?.includes('_live_') ? 'live' : process.env.STRIPE_SECRET_KEY ? 'test' : 'absent'], ['Resend', process.env.RESEND_API_KEY ? 'configuré' : 'absent']];
   return (
     <>
       <h1 className="text-[22px] font-extrabold text-navy mb-4">Paramètres</h1>
